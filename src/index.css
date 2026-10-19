@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --arkham-border: #2a2f3e;
+  --arkham-panel: #141821;
+  --arkham-accent: #d4af37;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #0b0d12;
+  color: #e6e6e6;
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+}
+
+.border-arkham-border {
+  border-color: var(--arkham-border);
+}
+.bg-arkham-panel {
+  background-color: var(--arkham-panel);
+}
+.text-arkham-accent {
+  color: var(--arkham-accent);
+}
+.bg-arkham-accent {
+  background-color: var(--arkham-accent);
+}

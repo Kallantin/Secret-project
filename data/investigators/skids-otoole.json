@@ -1,0 +1,11 @@
+{
+  "code": "01004",
+  "name": "Skids O'Toole",
+  "class": "rogue",
+  "willpower": 1,
+  "intellect": 1,
+  "combat": 2,
+  "agility": 3,
+  "max_health": 7,
+  "max_sanity": 5
+}

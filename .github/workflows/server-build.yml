@@ -1,0 +1,69 @@
+name: Server Build
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "server/**"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - ".github/workflows/server-build.yml"
+  pull_request:
+    paths:
+      - "server/**"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - ".github/workflows/server-build.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: server-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Typecheck and Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: corepack pnpm install --no-frozen-lockfile
+
+      - name: Typecheck server
+        run: corepack pnpm --filter @arkham/server typecheck
+
+      - name: Build server
+        run: corepack pnpm --filter @arkham/server build
+
+  docker:
+    name: Build Docker Image
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server/Dockerfile
+          push: false
+          tags: arkham-horror-lcg-server:ci

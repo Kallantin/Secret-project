@@ -1,0 +1,7 @@
+packages:
+  - "server"
+  - "scripts"
+
+allowBuilds:
+  esbuild: true
+  sharp: true

@@ -1,0 +1,11 @@
+{
+  "code": "01003",
+  "name": "Agnes Baker",
+  "class": "mystic",
+  "willpower": 3,
+  "intellect": 2,
+  "combat": 1,
+  "agility": 1,
+  "max_health": 6,
+  "max_sanity": 7
+}

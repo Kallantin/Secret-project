@@ -1,0 +1,11 @@
+{
+  "code": "01005",
+  "name": "Wendy Adams",
+  "class": "survivor",
+  "willpower": 2,
+  "intellect": 2,
+  "combat": 2,
+  "agility": 2,
+  "max_health": 8,
+  "max_sanity": 5
+}

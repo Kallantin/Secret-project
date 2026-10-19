@@ -1,0 +1,23 @@
+{
+  "name": "@arkham/scripts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Asset extraction and data validation tooling for Arkham Horror LCG",
+  "license": "MIT",
+  "scripts": {
+    "extract-assets": "tsx src/extract-assets.ts",
+    "validate-data": "tsx src/validate-data.ts",
+    "build-atlases": "tsx src/build-atlases.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "sharp": "^0.33.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.3"
+  }
+}

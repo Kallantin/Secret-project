@@ -1,0 +1,11 @@
+{
+  "code": "01001",
+  "name": "Roland Banks",
+  "class": "guardian",
+  "willpower": 2,
+  "intellect": 1,
+  "combat": 3,
+  "agility": 1,
+  "max_health": 9,
+  "max_sanity": 5
+}
