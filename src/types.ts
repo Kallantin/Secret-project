@@ -27,6 +27,18 @@ export interface SkillTestResult {
   total: number;
 }
 
+export interface MythosResult {
+  card: Card;
+  spawned_enemy: Card | null;
+  discarded: boolean;
+}
+
+export interface PlayCardResult {
+  investigator_id: string;
+  card: Card;
+  remaining_resources: number;
+}
+
 export interface SkillIcons {
   willpower: number;
   intellect: number;
@@ -54,11 +66,11 @@ export interface DeckSlot {
 }
 
 export interface Deck {
-  draw_pile: unknown[];
-  hand: unknown[];
-  discard_pile: unknown[];
-  play_area: unknown[];
-  removed_from_game: unknown[];
+  draw_pile: Card[];
+  hand: Card[];
+  discard_pile: Card[];
+  play_area: Card[];
+  removed_from_game: Card[];
   decklist: DeckSlot[];
 }
 
@@ -91,5 +103,7 @@ export interface GameState {
   investigators: Investigator[];
   chaos_bag: ChaosBag;
   encounter_deck: Card[];
+  encounter_discard: Card[];
+  enemies_in_play: Card[];
   log: string[];
 }

@@ -7,7 +7,9 @@ import GameLog from "./components/GameLog";
 import InvestigatorCard from "./components/InvestigatorCard";
 import InvestigatorPicker from "./components/InvestigatorPicker";
 import InvestigatorTurnPanel from "./components/InvestigatorTurnPanel";
+import MythosPhasePanel from "./components/MythosPhasePanel";
 import { type InvestigatorTemplate } from "./data/investigators";
+import { ENCOUNTER_CARDS } from "./data/cards";
 import { useGameStore } from "./store/gameStore";
 import type { Investigator } from "./types";
 
@@ -38,7 +40,7 @@ export default function App() {
       max_health: inv.max_health,
       max_sanity: inv.max_sanity,
     }));
-    void startNewGame(undefined, undefined, undefined, selections);
+    void startNewGame(undefined, undefined, undefined, selections, ENCOUNTER_CARDS);
   };
 
   return (
@@ -79,6 +81,7 @@ export default function App() {
 
         <aside className="flex flex-col gap-4 overflow-auto">
           <ChaosBagPanel />
+          <MythosPhasePanel />
           <InvestigatorTurnPanel />
           <CardLibrary />
           <DeckBuilder />

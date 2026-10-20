@@ -1,5 +1,12 @@
 import { create } from "zustand";
-import type { ChaosToken, DeckSlot, GameState, SkillTestResult } from "../types";
+import type { CardTemplate } from "../data/cards";
+import type {
+  ChaosToken,
+  DeckSlot,
+  GameState,
+  MythosResult,
+  SkillTestResult,
+} from "../types";
 import {
   addInvestigator as apiAddInvestigator,
   advancePhase as apiAdvancePhase,
@@ -8,6 +15,8 @@ import {
   isTauri,
   loadGame as apiLoadGame,
   newGame as apiNewGame,
+  mythosPhase as apiMythosPhase,
+  playCard as apiPlayCard,
   resetTurn as apiResetTurn,
   saveGame as apiSaveGame,
   skillTest as apiSkillTest,
@@ -50,6 +59,7 @@ interface GameStore {
     scenario?: string,
     seed?: number | null,
     investigators?: InvestigatorSelection[],
+    encounterCards?: CardTemplate[],
   ) => Promise<void>;
   addInvestigator: (investigator: InvestigatorSelection) => Promise<void>;
   nextPhase: () => Promise<void>;
@@ -66,6 +76,9 @@ interface GameStore {
   spendInvestigatorAction: (investigatorId: string) => Promise<void>;
   resetInvestigatorTurn: () => Promise<void>;
   lastSkillTest: SkillTestResult | null;
+  performMythosPhase: () => Promise<void>;
+  playInvestigatorCard: (investigatorId: string, cardId: string) => Promise<void>;
+  lastMythosResult: MythosResult | null;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -77,6 +90,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   deckBuilderInvestigator: null,
   deckBuilderCards: [],
   lastSkillTest: null,
+  lastMythosResult: null,
 
   init: async () => {
     if (!get().inTauri) {
@@ -90,13 +104,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ game });
   },
 
-  startNewGame: async (campaign, scenario, seed, investigators) => {
+  startNewGame: async (campaign, scenario, seed, investigators, encounterCards) => {
     set({ busy: true, error: null });
     try {
       const game = await apiNewGame(
         campaign ?? "Night of the Zealot",
         scenario ?? "The Gathering",
         seed ?? null,
+        encounterCards ?? [],
       );
       set({ game, lastToken: null });
 
@@ -261,6 +276,29 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ busy: true, error: null });
     try {
       await apiResetTurn();
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  performMythosPhase: async () => {
+    set({ busy: true, error: null });
+    try {
+      const result = await apiMythosPhase();
+      set({ lastMythosResult: result, busy: false });
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error), busy: false });
+    }
+  },
+
+  playInvestigatorCard: async (investigatorId, cardId) => {
+    set({ busy: true, error: null });
+    try {
+      await apiPlayCard(investigatorId, cardId);
       await get().refresh();
     } catch (error) {
       set({ error: message(error) });

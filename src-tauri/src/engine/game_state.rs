@@ -1,3 +1,6 @@
+use rand::prelude::SliceRandom;
+use rand_chacha::rand_core::SeedableRng;
+use rand_chacha::ChaCha20Rng;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -18,11 +21,22 @@ pub struct GameState {
     pub investigators: Vec<Investigator>,
     pub chaos_bag: ChaosBag,
     pub encounter_deck: Vec<Card>,
+    pub encounter_discard: Vec<Card>,
+    pub enemies_in_play: Vec<Card>,
     pub log: Vec<String>,
 }
 
 impl GameState {
-    pub fn new(campaign: impl Into<String>, scenario: impl Into<String>, seed: u64) -> Self {
+    pub fn new(
+        campaign: impl Into<String>,
+        scenario: impl Into<String>,
+        seed: u64,
+        encounter_cards: Vec<Card>,
+    ) -> Self {
+        let mut rng = ChaCha20Rng::seed_from_u64(seed);
+        let mut encounter_deck: Vec<Card> = encounter_cards;
+        encounter_deck.shuffle(&mut rng);
+
         let mut state = Self {
             id: Uuid::new_v4(),
             campaign: campaign.into(),
@@ -32,7 +46,9 @@ impl GameState {
             active_investigator: 0,
             investigators: Vec::new(),
             chaos_bag: ChaosBag::standard(seed),
-            encounter_deck: Vec::new(),
+            encounter_deck,
+            encounter_discard: Vec::new(),
+            enemies_in_play: Vec::new(),
             log: Vec::new(),
         };
         let message = format!(
@@ -142,6 +158,98 @@ impl GameState {
         self.log("Turn reset: actions restored for all investigators.");
     }
 
+    /// Draw the top card of the encounter deck (mythos phase). If the deck is
+    /// empty, reshuffle the discard pile.
+    pub fn draw_encounter_card(&mut self) -> Result<Card> {
+        if self.encounter_deck.is_empty() && !self.encounter_discard.is_empty() {
+            let mut rng = ChaCha20Rng::seed_from_u64(self.chaos_bag.seed.wrapping_add(self.chaos_bag.draws));
+            std::mem::swap(&mut self.encounter_deck, &mut self.encounter_discard);
+            self.encounter_deck.shuffle(&mut rng);
+            self.log("Encounter deck reshuffled from discard pile.");
+        }
+        let card = self
+            .encounter_deck
+            .pop()
+            .ok_or_else(|| GameError::RuleViolation("encounter deck is empty".into()))?;
+        let message = format!("Mythos: drew encounter card {}", card.name);
+        self.log(message);
+        Ok(card)
+    }
+
+    /// Resolve the mythos phase: draw an encounter card. Enemies spawn into play,
+    /// treacheries are resolved immediately and discarded.
+    pub fn mythos_phase(&mut self) -> Result<MythosResult> {
+        let card = self.draw_encounter_card()?;
+
+        match card.card_type {
+            crate::engine::card::CardType::Enemy => {
+                self.enemies_in_play.push(card.clone());
+                let message = format!("Enemy enters play: {}", card.name);
+                self.log(message);
+                Ok(MythosResult {
+                    card: card.clone(),
+                    spawned_enemy: Some(card),
+                    discarded: false,
+                })
+            }
+            _ => {
+                self.encounter_discard.push(card.clone());
+                Ok(MythosResult {
+                    card,
+                    spawned_enemy: None,
+                    discarded: true,
+                })
+            }
+        }
+    }
+
+    /// Play a card from an investigator's hand into their play area, deducting
+    /// its cost from resources.
+    pub fn play_card(
+        &mut self,
+        investigator_id: Uuid,
+        card_id: Uuid,
+    ) -> Result<PlayCardResult> {
+        let (card, investigator_name, remaining_resources) = {
+            let investigator = self
+                .investigator_mut(investigator_id)
+                .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+
+            let card_index = investigator
+                .deck
+                .hand
+                .iter()
+                .position(|card| card.id == card_id)
+                .ok_or_else(|| GameError::CardNotFound(card_id.to_string()))?;
+
+            let card = investigator.deck.hand.remove(card_index);
+
+            if let Some(cost) = card.cost {
+                if cost > investigator.resources {
+                    investigator.deck.hand.push(card.clone());
+                    return Err(GameError::InsufficientResources {
+                        needed: cost,
+                        available: investigator.resources,
+                    });
+                }
+                investigator.resources -= cost;
+            }
+
+            let remaining = investigator.resources;
+            investigator.deck.play_area.push(card.clone());
+            (card, investigator.name.clone(), remaining)
+        };
+
+        let message = format!("{investigator_name} plays {} from hand.", card.name);
+        self.log(message);
+
+        Ok(PlayCardResult {
+            investigator_id,
+            card,
+            remaining_resources,
+        })
+    }
+
     pub fn log(&mut self, message: impl Into<String>) {
         self.log.push(message.into());
     }
@@ -156,6 +264,20 @@ pub struct SkillTestResult {
     pub token: ChaosToken,
     pub token_modifier: i8,
     pub total: i8,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MythosResult {
+    pub card: Card,
+    pub spawned_enemy: Option<Card>,
+    pub discarded: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlayCardResult {
+    pub investigator_id: Uuid,
+    pub card: Card,
+    pub remaining_resources: i32,
 }
 
 fn skill_as_str(skill: SkillIcon) -> &'static str {

@@ -1,10 +1,11 @@
+use serde::Deserialize;
 use std::sync::Mutex;
 
 use tauri::State;
 
-use crate::engine::card::SkillIcon;
+use crate::engine::card::{Card, SkillIcon};
 use crate::engine::chaos::ChaosToken;
-use crate::engine::game_state::{GameState, SkillTestResult};
+use crate::engine::game_state::{GameState, MythosResult, PlayCardResult, SkillTestResult};
 use crate::engine::investigator::Investigator;
 use crate::error::{GameError, Result};
 use uuid::Uuid;
@@ -24,14 +25,26 @@ impl AppState {
     }
 }
 
+#[derive(Deserialize)]
+pub struct NewGameInput {
+    pub campaign: String,
+    pub scenario: String,
+    pub seed: Option<u64>,
+    #[serde(default)]
+    pub encounter_cards: Vec<Card>,
+}
+
 #[tauri::command]
 pub fn new_game(
     state: State<'_, AppState>,
-    campaign: String,
-    scenario: String,
-    seed: Option<u64>,
+    input: NewGameInput,
 ) -> Result<GameState> {
-    let game = GameState::new(campaign, scenario, seed.unwrap_or(DEFAULT_SEED));
+    let game = GameState::new(
+        input.campaign,
+        input.scenario,
+        input.seed.unwrap_or(DEFAULT_SEED),
+        input.encounter_cards,
+    );
     let mut guard = state.lock_game()?;
     *guard = Some(game.clone());
     Ok(game)
@@ -125,6 +138,28 @@ pub fn reset_turn(state: State<'_, AppState>) -> Result<GameState> {
     let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
     game.reset_turn();
     Ok(game.clone())
+}
+
+#[tauri::command]
+pub fn mythos_phase(state: State<'_, AppState>) -> Result<MythosResult> {
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.mythos_phase()
+}
+
+#[tauri::command]
+pub fn play_card(
+    state: State<'_, AppState>,
+    investigator_id: String,
+    card_id: String,
+) -> Result<PlayCardResult> {
+    let investigator_id = Uuid::parse_str(&investigator_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid investigator id: {investigator_id}")))?;
+    let card_id = Uuid::parse_str(&card_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid card id: {card_id}")))?;
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.play_card(investigator_id, card_id)
 }
 
 #[tauri::command]

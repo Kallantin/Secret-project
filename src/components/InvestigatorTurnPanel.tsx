@@ -42,6 +42,9 @@ export default function InvestigatorTurnPanel() {
   const resetInvestigatorTurn = useGameStore(
     (state) => state.resetInvestigatorTurn,
   );
+  const playInvestigatorCard = useGameStore(
+    (state) => state.playInvestigatorCard,
+  );
 
   const investigator = game
     ? game.investigators[game.active_investigator]
@@ -57,6 +60,11 @@ export default function InvestigatorTurnPanel() {
     void spendInvestigatorAction(investigator.id);
   };
 
+  const handlePlayCard = (cardId: string) => {
+    if (!investigator) return;
+    void playInvestigatorCard(investigator.id, cardId);
+  };
+
   if (!game || !investigator) {
     return (
       <div className="rounded-lg border border-arkham-border bg-arkham-panel p-4">
@@ -69,6 +77,9 @@ export default function InvestigatorTurnPanel() {
       </div>
     );
   }
+
+  const handCards = investigator.deck.hand;
+  const playAreaCards = investigator.deck.play_area;
 
   return (
     <div className="rounded-lg border border-arkham-border bg-arkham-panel p-4">
@@ -158,6 +169,50 @@ export default function InvestigatorTurnPanel() {
           ))}
         </div>
       </div>
+
+      {handCards.length > 0 && (
+        <div className="mb-4">
+          <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
+            Hand ({handCards.length})
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {handCards.map((card) => (
+              <button
+                type="button"
+                key={card.id}
+                onClick={() => void handlePlayCard(card.id)}
+                disabled={busy || investigator.actions_remaining === 0}
+                className="flex flex-col items-center gap-1 rounded border border-arkham-border bg-black/20 px-2 py-2 text-xs text-gray-200 hover:border-arkham-accent/50"
+              >
+                <span className="font-semibold">{card.name}</span>
+                {card.cost != null && (
+                  <span className="text-[10px] text-gray-400">
+                    cost {card.cost}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {playAreaCards.length > 0 && (
+        <div className="mb-4">
+          <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
+            Play Area ({playAreaCards.length})
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {playAreaCards.map((card) => (
+              <div
+                key={card.id}
+                className="flex flex-col items-center gap-1 rounded border border-arkham-border/50 bg-black/10 px-2 py-2 text-xs text-gray-300"
+              >
+                <span className="font-semibold">{card.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {lastSkillTest && (
         <div className="mt-4 pt-4 border-t border-arkham-border/50">

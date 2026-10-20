@@ -17,6 +17,8 @@ pub fn run() {
             commands::skill_test,
             commands::spend_action,
             commands::reset_turn,
+            commands::mythos_phase,
+            commands::play_card,
             commands::save_game,
             commands::load_game,
         ])
