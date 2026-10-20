@@ -24,6 +24,11 @@ pub struct GameState {
     pub encounter_discard: Vec<Card>,
     pub enemies_in_play: Vec<EnemyInstance>,
     pub locations_in_play: Vec<LocationInstance>,
+    pub current_act_index: usize,
+    pub current_agenda_index: usize,
+    pub acts: Vec<ActInstance>,
+    pub agendas: Vec<AgendaInstance>,
+    pub game_status: GameStatus,
     pub log: Vec<String>,
 }
 
@@ -51,6 +56,11 @@ impl GameState {
             encounter_discard: Vec::new(),
             enemies_in_play: Vec::new(),
             locations_in_play: default_locations(),
+            current_act_index: 0,
+            current_agenda_index: 0,
+            acts: default_acts(),
+            agendas: default_agendas(),
+            game_status: GameStatus::Ongoing,
             log: Vec::new(),
         };
         let message = format!(
@@ -523,6 +533,137 @@ impl GameState {
         })
     }
 
+    /// Place doom on the current agenda. If doom reaches the agenda's doom
+    /// threshold, advance to the next agenda. Returns whether the agenda
+    /// advanced and whether the game is lost.
+    pub fn place_doom(&mut self, amount: u32) -> Result<PlaceDoomResult> {
+        let agenda_index = self.current_agenda_index;
+
+        // Step 1: Modify doom on the current agenda; borrow ends here.
+        let (agenda_name, doom_threshold, doom_after, advanced) = {
+            let agenda = self
+                .agendas
+                .get_mut(agenda_index)
+                .ok_or_else(|| GameError::RuleViolation("no current agenda".into()))?;
+
+            let name = agenda.card.name.clone();
+            let threshold = agenda.doom_threshold;
+
+            agenda.doom += amount;
+            let advanced = agenda.doom >= threshold;
+            let doom = agenda.doom;
+
+            (name, threshold, doom, advanced)
+        };
+
+        // Step 2: If the threshold was reached, reset doom and advance.
+        let mut next_agenda = None;
+        if advanced {
+            self.agendas[agenda_index].doom = 0;
+            self.current_agenda_index += 1;
+            if self.current_agenda_index >= self.agendas.len() {
+                self.game_status = GameStatus::Lost;
+            } else {
+                next_agenda = Some(
+                    self.agendas[self.current_agenda_index].card.name.clone(),
+                );
+            }
+        }
+
+        let message = format!("Doom placed on {agenda_name} ({doom_after}/{doom_threshold})");
+        self.log(message);
+
+        Ok(PlaceDoomResult {
+            agenda_index,
+            doom: doom_after,
+            advanced,
+            next_agenda,
+            game_status: self.game_status,
+        })
+    }
+
+    /// Advance the current act by spending clues. Each investigator may
+    /// contribute clues equal to the act's clue cost divided among them.
+    pub fn advance_act(&mut self, investigator_id: Uuid, clues_spent: u32) -> Result<AdvanceActResult> {
+        let act_index = self.current_act_index;
+
+        // Step 1: Modify progress on the current act; borrow ends here.
+        let (_clue_cost, act_name, advanced, progress_after) = {
+            let act = self
+                .acts
+                .get_mut(act_index)
+                .ok_or_else(|| GameError::RuleViolation("no current act".into()))?;
+
+            let cost = act.card.raw.get("clue_cost")
+                .and_then(|v| v.as_u64())
+                .map(|v| v as u32)
+                .unwrap_or(1);
+
+            let name = act.card.name.clone();
+
+            if clues_spent == 0 {
+                return Err(GameError::RuleViolation("must spend at least 1 clue".into()));
+            }
+
+            act.progress += clues_spent;
+            let advanced = act.progress >= cost;
+            let progress = act.progress;
+
+            (cost, name, advanced, progress)
+        };
+
+        // Step 2: If the clue cost was met, reset progress and advance.
+        let mut next_act = None;
+        if advanced {
+            self.acts[act_index].progress = 0;
+            self.current_act_index += 1;
+            if self.current_act_index >= self.acts.len() {
+                self.game_status = GameStatus::Won;
+            } else {
+                next_act = Some(self.acts[self.current_act_index].card.name.clone());
+            }
+        }
+
+        // Step 3: Spend clues from the investigator.
+        let investigator = self
+            .investigator(investigator_id)
+            .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+        if investigator.clues < clues_spent as i32 {
+            return Err(GameError::RuleViolation(
+                "investigator does not have enough clues".into(),
+            ));
+        }
+
+        let investigator_name = investigator.name.clone();
+        let investigator = self
+            .investigator_mut(investigator_id)
+            .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+        investigator.clues -= clues_spent as i32;
+
+        let message = format!(
+            "{investigator_name} spends {clues_spent} clue{} on act {act_name}",
+            if clues_spent == 1 { "" } else { "s" }
+        );
+        self.log(message);
+
+        Ok(AdvanceActResult {
+            act_index,
+            progress: progress_after,
+            advanced,
+            next_act,
+            game_status: self.game_status,
+        })
+    }
+
+    /// Check whether any investigator is defeated (health or sanity at 0).
+    /// If all investigators are defeated, the game is lost.
+    pub fn check_game_status(&mut self) -> GameStatus {
+        if self.investigators.iter().all(|inv| inv.is_defeated) {
+            self.game_status = GameStatus::Lost;
+        }
+        self.game_status
+    }
+
     pub fn log(&mut self, message: impl Into<String>) {
         self.log.push(message.into());
     }
@@ -689,4 +830,111 @@ fn enemy_damage_value(card: &Card) -> i32 {
         .get("enemy_damage")
         .and_then(|v| v.as_i64())
         .unwrap_or(1) as i32
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum GameStatus {
+    Ongoing,
+    Won,
+    Lost,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ActInstance {
+    pub id: Uuid,
+    pub card: Card,
+    pub progress: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgendaInstance {
+    pub id: Uuid,
+    pub card: Card,
+    pub doom: u32,
+    pub doom_threshold: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlaceDoomResult {
+    pub agenda_index: usize,
+    pub doom: u32,
+    pub advanced: bool,
+    pub next_agenda: Option<String>,
+    pub game_status: GameStatus,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AdvanceActResult {
+    pub act_index: usize,
+    pub progress: u32,
+    pub advanced: bool,
+    pub next_act: Option<String>,
+    pub game_status: GameStatus,
+}
+
+/// Default act cards used when no act cards exist in the encounter deck.
+fn default_acts() -> Vec<ActInstance> {
+    let make_act = |code: &str, name: &str, text: &str, clue_cost: u32| {
+        ActInstance {
+            id: Uuid::new_v4(),
+            card: Card {
+                id: Uuid::new_v4(),
+                code: code.to_string(),
+                name: name.to_string(),
+                card_type: crate::engine::card::CardType::Act,
+                class: Some(crate::engine::card::CardClass::Neutral),
+                cost: None,
+                xp: 0,
+                icons: Default::default(),
+                traits: Vec::new(),
+                text: text.to_string(),
+                raw: serde_json::json!({
+                    "code": code,
+                    "name": name,
+                    "clue_cost": clue_cost,
+                    "type_code": "act",
+                }),
+            },
+            progress: 0,
+        }
+    };
+
+    vec![
+        make_act("act-001", "Investigate the Scene", "Gather clues at the locations to learn what happened.", 3),
+        make_act("act-002", "Confront the Threat", "Face the source of the corruption head-on.", 4),
+    ]
+}
+
+/// Default agenda cards used when no agenda cards exist in the encounter deck.
+fn default_agendas() -> Vec<AgendaInstance> {
+    let make_agenda = |code: &str, name: &str, text: &str, doom_threshold: u32| {
+        AgendaInstance {
+            id: Uuid::new_v4(),
+            card: Card {
+                id: Uuid::new_v4(),
+                code: code.to_string(),
+                name: name.to_string(),
+                card_type: crate::engine::card::CardType::Agenda,
+                class: Some(crate::engine::card::CardClass::Neutral),
+                cost: None,
+                xp: 0,
+                icons: Default::default(),
+                traits: Vec::new(),
+                text: text.to_string(),
+                raw: serde_json::json!({
+                    "code": code,
+                    "name": name,
+                    "doom_threshold": doom_threshold,
+                    "type_code": "agenda",
+                }),
+            },
+            doom: 0,
+            doom_threshold,
+        }
+    };
+
+    vec![
+        make_agenda("agenda-001", "The Darkness Grows", "The ancient evil stirs in the shadows.", 8),
+        make_agenda("agenda-002", "The Hour of Reckoning", "Doom consumes Arkham if not stopped.", 8),
+    ]
 }

@@ -84,6 +84,37 @@ export interface InvestigateResult {
   clues_remaining: number;
 }
 
+export type GameStatus = "ongoing" | "won" | "lost";
+
+export interface ActInstance {
+  id: string;
+  card: Card;
+  progress: number;
+}
+
+export interface AgendaInstance {
+  id: string;
+  card: Card;
+  doom: number;
+  doom_threshold: number;
+}
+
+export interface PlaceDoomResult {
+  agenda_index: number;
+  doom: number;
+  advanced: boolean;
+  next_agenda: string | null;
+  game_status: GameStatus;
+}
+
+export interface AdvanceActResult {
+  act_index: number;
+  progress: number;
+  advanced: boolean;
+  next_act: string | null;
+  game_status: GameStatus;
+}
+
 export interface SkillIcons {
   willpower: number;
   intellect: number;
@@ -156,5 +187,10 @@ export interface GameState {
   encounter_discard: Card[];
   enemies_in_play: EnemyInstance[];
   locations_in_play: LocationInstance[];
+  current_act_index: number;
+  current_agenda_index: number;
+  acts: ActInstance[];
+  agendas: AgendaInstance[];
+  game_status: GameStatus;
   log: string[];
 }

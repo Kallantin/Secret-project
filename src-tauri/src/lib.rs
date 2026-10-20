@@ -22,6 +22,8 @@ pub fn run() {
             commands::fight,
             commands::move_to_location,
             commands::investigate,
+            commands::place_doom,
+            commands::advance_act,
             commands::play_card,
             commands::save_game,
             commands::load_game,

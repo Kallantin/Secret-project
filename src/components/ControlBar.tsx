@@ -32,6 +32,20 @@ export default function ControlBar({ onNewGame }: ControlBarProps) {
         )}
       </div>
 
+      {game?.game_status !== "ongoing" && (
+        <div className="flex items-center justify-center px-4 py-2">
+          <span
+            className={`px-3 py-1 rounded text-xs font-bold ${
+              game?.game_status === "won"
+                ? "bg-green-900/20 text-green-400 border border-green-500/50"
+                : "bg-red-900/20 text-red-400 border border-red-500/50"
+            }`}
+          >
+            {game?.game_status === "won" ? "VICTORY" : "DEFEAT"}
+          </span>
+        </div>
+      )}
+
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -44,7 +58,7 @@ export default function ControlBar({ onNewGame }: ControlBarProps) {
         <button
           type="button"
           className="rounded border border-arkham-border px-3 py-1.5 text-sm disabled:opacity-50"
-          disabled={!game || busy}
+          disabled={!game || busy || game?.game_status !== "ongoing"}
           onClick={() => void nextPhase()}
         >
           Next Phase
@@ -52,7 +66,7 @@ export default function ControlBar({ onNewGame }: ControlBarProps) {
         <button
           type="button"
           className="rounded border border-arkham-border px-3 py-1.5 text-sm disabled:opacity-50"
-          disabled={!game || busy}
+          disabled={!game || busy || game?.game_status !== "ongoing"}
           onClick={() => void drawToken()}
         >
           Draw Token

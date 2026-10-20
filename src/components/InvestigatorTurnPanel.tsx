@@ -2,7 +2,7 @@ import { useGameStore } from "../store/gameStore";
 import type { ChaosToken } from "../types";
 
 function tokenLabel(token: ChaosToken): string {
-  switch (token.kind) {
+    switch (token.kind) {
     case "numeric":
       return token.value >= 0 ? `+${token.value}` : `${token.value}`;
     case "skull":
@@ -45,6 +45,7 @@ export default function InvestigatorTurnPanel() {
   const playInvestigatorCard = useGameStore(
     (state) => state.playInvestigatorCard,
   );
+  const advanceAct = useGameStore((state) => state.advanceAct);
 
   const investigator = game
     ? game.investigators[game.active_investigator]
@@ -168,6 +169,26 @@ export default function InvestigatorTurnPanel() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="mb-3">
+        <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
+          Advance Act
+        </p>
+        <button
+          type="button"
+          onClick={() => void advanceAct(investigator.id, 1)}
+          disabled={
+            busy ||
+            !investigator ||
+            investigator.actions_remaining === 0 ||
+            investigator.clues < 1 ||
+            game.game_status !== "ongoing"
+          }
+          className="w-full rounded border border-arkham-border px-3 py-1.5 text-sm text-gray-300 disabled:opacity-40 hover:bg-black/20"
+        >
+          Spend 1 Clue to Advance Act
+        </button>
       </div>
 
       {handCards.length > 0 && (

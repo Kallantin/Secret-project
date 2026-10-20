@@ -6,8 +6,8 @@ use tauri::State;
 use crate::engine::card::{Card, SkillIcon};
 use crate::engine::chaos::ChaosToken;
 use crate::engine::game_state::{
-    GameState, EngageResult, FightResult, InvestigateResult, MoveResult, MythosResult,
-    PlayCardResult, SkillTestResult,
+    GameState, AdvanceActResult, EngageResult, FightResult, InvestigateResult,
+    MoveResult, MythosResult, PlaceDoomResult, PlayCardResult, SkillTestResult,
 };
 use crate::engine::investigator::Investigator;
 use crate::error::{GameError, Result};
@@ -220,6 +220,29 @@ pub fn investigate(
     let mut guard = state.lock_game()?;
     let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
     game.investigate(investigator_id)
+}
+
+#[tauri::command]
+pub fn place_doom(
+    state: State<'_, AppState>,
+    amount: u32,
+) -> Result<PlaceDoomResult> {
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.place_doom(amount)
+}
+
+#[tauri::command]
+pub fn advance_act(
+    state: State<'_, AppState>,
+    investigator_id: String,
+    clues_spent: u32,
+) -> Result<AdvanceActResult> {
+    let investigator_id = Uuid::parse_str(&investigator_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid investigator id: {investigator_id}")))?;
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.advance_act(investigator_id, clues_spent)
 }
 
 #[tauri::command]

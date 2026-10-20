@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { CardTemplate } from "../data/cards";
 import type {
+  AdvanceActResult,
   ChaosToken,
   EngageResult,
   FightResult,
@@ -9,6 +10,7 @@ import type {
   InvestigateResult,
   MoveResult,
   MythosResult,
+  PlaceDoomResult,
   PlayCardResult,
   SkillTestResult,
 } from "../types";
@@ -129,6 +131,20 @@ export async function moveToLocation(
 export async function investigate(investigatorId: string): Promise<InvestigateResult> {
   return invoke<InvestigateResult>("investigate", {
     investigator_id: investigatorId,
+  });
+}
+
+export async function placeDoom(amount: number): Promise<PlaceDoomResult> {
+  return invoke<PlaceDoomResult>("place_doom", { amount });
+}
+
+export async function advanceAct(
+  investigatorId: string,
+  cluesSpent: number,
+): Promise<AdvanceActResult> {
+  return invoke<AdvanceActResult>("advance_act", {
+    investigator_id: investigatorId,
+    clues_spent: cluesSpent,
   });
 }
 

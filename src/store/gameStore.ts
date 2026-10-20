@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { CardTemplate } from "../data/cards";
 import type {
+  AdvanceActResult,
   ChaosToken,
   DeckSlot,
   EngageResult,
@@ -9,10 +10,12 @@ import type {
   InvestigateResult,
   MoveResult,
   MythosResult,
+  PlaceDoomResult,
   SkillTestResult,
 } from "../types";
 import {
   addInvestigator as apiAddInvestigator,
+  advanceAct as apiAdvanceAct,
   advancePhase as apiAdvancePhase,
   drawChaosToken as apiDrawChaosToken,
   engage as apiEngage,
@@ -24,6 +27,7 @@ import {
   moveToLocation as apiMoveToLocation,
   newGame as apiNewGame,
   mythosPhase as apiMythosPhase,
+  placeDoom as apiPlaceDoom,
   playCard as apiPlayCard,
   resetTurn as apiResetTurn,
   saveGame as apiSaveGame,
@@ -93,11 +97,15 @@ interface GameStore {
   lastFightResult: FightResult | null;
   lastInvestigateResult: InvestigateResult | null;
   lastMoveResult: MoveResult | null;
+  lastPlaceDoomResult: PlaceDoomResult | null;
+  lastAdvanceActResult: AdvanceActResult | null;
   moveToLocation: (
     investigatorId: string,
     locationInstanceId: string,
   ) => Promise<void>;
   investigate: (investigatorId: string) => Promise<void>;
+  placeDoom: (amount: number) => Promise<void>;
+  advanceAct: (investigatorId: string, cluesSpent: number) => Promise<void>;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -114,6 +122,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   lastFightResult: null,
   lastInvestigateResult: null,
   lastMoveResult: null,
+  lastPlaceDoomResult: null,
+  lastAdvanceActResult: null,
 
   init: async () => {
     if (!get().inTauri) {
@@ -372,6 +382,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
     try {
       const result = await apiInvestigate(investigatorId);
       set({ lastInvestigateResult: result, busy: false });
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  placeDoom: async (amount: number) => {
+    set({ busy: true, error: null });
+    try {
+      const result = await apiPlaceDoom(amount);
+      set({ lastPlaceDoomResult: result, busy: false });
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  advanceAct: async (investigatorId: string, cluesSpent: number) => {
+    set({ busy: true, error: null });
+    try {
+      const result = await apiAdvanceAct(investigatorId, cluesSpent);
+      set({ lastAdvanceActResult: result, busy: false });
       await get().refresh();
     } catch (error) {
       set({ error: message(error) });
