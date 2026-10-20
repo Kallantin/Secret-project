@@ -28,6 +28,7 @@ pnpm-debug.log*
 src-tauri/target/
 src-tauri/gen/
 **/*.rs.bk
+*.bak
 
 # OS / editor
 .DS_Store
