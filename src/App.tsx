@@ -14,6 +14,7 @@ import AgendaPanel from "./components/AgendaPanel";
 import RoomLobby from "./components/RoomLobby";
 import { type InvestigatorTemplate } from "./data/investigators";
 import { ENCOUNTER_CARDS } from "./data/cards";
+import { SCENARIOS } from "./data/scenarios";
 import { useGameStore } from "./store/gameStore";
 import type { Investigator } from "./types";
 
@@ -44,7 +45,15 @@ export default function App() {
       max_health: inv.max_health,
       max_sanity: inv.max_sanity,
     }));
-    void startNewGame(undefined, undefined, undefined, selections, ENCOUNTER_CARDS);
+    const scenario = SCENARIOS.find(s => s.code === "01001");
+    void startNewGame(
+      undefined,
+      undefined,
+      undefined,
+      selections,
+      ENCOUNTER_CARDS,
+      scenario,
+    );
   };
 
   return (

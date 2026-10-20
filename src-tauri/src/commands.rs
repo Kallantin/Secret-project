@@ -6,8 +6,8 @@ use tauri::State;
 use crate::engine::card::{Card, SkillIcon};
 use crate::engine::chaos::ChaosToken;
 use crate::engine::game_state::{
-    GameState, AdvanceActResult, EngageResult, FightResult, InvestigateResult,
-    MoveResult, MythosResult, PlaceDoomResult, PlayCardResult, SkillTestResult,
+    GameState, AdvanceActResult, EngageResult, FightResult, InvestigateResult, MoveResult,
+    MythosResult, PlaceDoomResult, PlayCardResult, ScenarioData, SkillTestResult,
 };
 use crate::engine::investigator::Investigator;
 use crate::error::{GameError, Result};
@@ -35,6 +35,8 @@ pub struct NewGameInput {
     pub seed: Option<u64>,
     #[serde(default)]
     pub encounter_cards: Vec<Card>,
+    #[serde(default)]
+    pub scenario_data: ScenarioData,
 }
 
 #[tauri::command]
@@ -47,6 +49,7 @@ pub fn new_game(
         input.scenario,
         input.seed.unwrap_or(DEFAULT_SEED),
         input.encounter_cards,
+        input.scenario_data,
     );
     let mut guard = state.lock_game()?;
     *guard = Some(game.clone());

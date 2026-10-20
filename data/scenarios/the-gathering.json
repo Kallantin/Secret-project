@@ -3,5 +3,129 @@
   "code": "01001",
   "name": "The Gathering",
   "order": 1,
-  "chaos_bag": "standard"
+  "chaos_bag": "standard",
+  "acts": [
+    {
+      "code": "01001a",
+      "name": "Rumors at the Boarding House",
+      "clue_cost": 3,
+      "text": "Investigate one or more locations at The Boarding House to learn what strange events are occurring here.",
+      "raw": {
+        "code": "01001a",
+        "name": "Rumors at the Boarding House",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01001b",
+      "name": "The Boarding House",
+      "clue_cost": 3,
+      "text": "Investigate the Living Room to uncover the truth behind the strange happenings at the boarding house.",
+      "raw": {
+        "code": "01001b",
+        "name": "The Boarding House",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "agendas": [
+    {
+      "code": "01002a",
+      "name": "The Boarding House Burns Down",
+      "doom_threshold": 4,
+      "text": "The building is engulfed in flames. You must escape before it is too late.",
+      "raw": {
+        "code": "01002a",
+        "name": "The Boarding House Burns Down",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 4,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01002b",
+      "name": "Escape the Boarding House",
+      "doom_threshold": 4,
+      "text": "You must escape the burning building before it collapses around you.",
+      "raw": {
+        "code": "01002b",
+        "name": "Escape the Boarding House",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 4,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "locations": [
+    {
+      "code": "01003",
+      "name": "Front Door",
+      "clues": 2,
+      "shroud": 2,
+      "text": "The front door of the boarding house stands slightly ajar, creaking in the wind.",
+      "raw": {
+        "code": "01003",
+        "name": "Front Door",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 2,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01004",
+      "name": "Living Room",
+      "clues": 2,
+      "shroud": 2,
+      "text": "Dust covers the furniture in this once-elegant room. Strange symbols are scrawled on the walls.",
+      "raw": {
+        "code": "01004",
+        "name": "Living Room",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 2,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01005",
+      "name": "Kitchen",
+      "clues": 1,
+      "shroud": 1,
+      "text": "The kitchen is in disarray, with overturned chairs and scattered dishes.",
+      "raw": {
+        "code": "01005",
+        "name": "Kitchen",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 1,
+        "clues": 1,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ]
 }

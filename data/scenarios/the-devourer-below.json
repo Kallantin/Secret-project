@@ -3,5 +3,129 @@
   "code": "01003",
   "name": "The Devourer Below",
   "order": 3,
-  "chaos_bag": "standard"
+  "chaos_bag": "standard",
+  "acts": [
+    {
+      "code": "01003c",
+      "name": "The Sewers of Arkham",
+      "clue_cost": 4,
+      "text": "Investigate the sewers beneath Arkham to find the source of the strange occurrences.",
+      "raw": {
+        "code": "01003c",
+        "name": "The Sewers of Arkham",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 4,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01003d",
+      "name": "Confront the Devourer",
+      "clue_cost": 4,
+      "text": "Face the ancient entity that threatens to devour Arkham itself.",
+      "raw": {
+        "code": "01003d",
+        "name": "Confront the Devourer",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 4,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "agendas": [
+    {
+      "code": "01004a",
+      "name": "The Devourer Awakens",
+      "doom_threshold": 6,
+      "text": "Something ancient stirs beneath the city. You must stop it before it awakens fully.",
+      "raw": {
+        "code": "01004a",
+        "name": "The Devourer Awakens",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 6,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01004b",
+      "name": "The City Falls",
+      "doom_threshold": 6,
+      "text": "If the devourer is not stopped, Arkham will be consumed by madness.",
+      "raw": {
+        "code": "01004b",
+        "name": "The City Falls",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 6,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "locations": [
+    {
+      "code": "01009",
+      "name": "Sewer Entrance",
+      "clues": 1,
+      "shroud": 2,
+      "text": "A dark, wet entrance to the sewers beneath Arkham.",
+      "raw": {
+        "code": "01009",
+        "name": "Sewer Entrance",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 2,
+        "clues": 1,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01010",
+      "name": "Deep Sewers",
+      "clues": 2,
+      "shroud": 3,
+      "text": "The deep sewers twist and turn, filled with stagnant water and worse things.",
+      "raw": {
+        "code": "01010",
+        "name": "Deep Sewers",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 3,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01011",
+      "name": "The Chamber Below",
+      "clues": 3,
+      "shroud": 4,
+      "text": "A vast underground chamber where something ancient and terrible waits.",
+      "raw": {
+        "code": "01011",
+        "name": "The Chamber Below",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 4,
+        "clues": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ]
 }

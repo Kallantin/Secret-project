@@ -9,6 +9,51 @@ use crate::engine::chaos::{ChaosBag, ChaosToken};
 use crate::engine::investigator::Investigator;
 use crate::engine::phase::Phase;
 use crate::error::{GameError, Result};
+use serde_json::Value;
+
+/// Scenario act card data, deserialized from scenario JSON.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ScenarioActData {
+    pub code: String,
+    pub name: String,
+    pub text: String,
+    pub clue_cost: u32,
+    pub raw: Value,
+}
+
+/// Scenario agenda card data, deserialized from scenario JSON.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ScenarioAgendaData {
+    pub code: String,
+    pub name: String,
+    pub text: String,
+    pub doom_threshold: u32,
+    pub raw: Value,
+}
+
+/// Scenario location card data, deserialized from scenario JSON.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ScenarioLocationData {
+    pub code: String,
+    pub name: String,
+    pub text: String,
+    pub clues: u32,
+    pub shroud: u32,
+    pub raw: Value,
+}
+
+/// Complete scenario configuration, deserialized from scenario JSON files.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ScenarioData {
+    pub campaign: String,
+    pub code: String,
+    pub name: String,
+    pub order: u32,
+    pub chaos_bag: String,
+    pub acts: Vec<ScenarioActData>,
+    pub agendas: Vec<ScenarioAgendaData>,
+    pub locations: Vec<ScenarioLocationData>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameState {
@@ -38,10 +83,78 @@ impl GameState {
         scenario: impl Into<String>,
         seed: u64,
         encounter_cards: Vec<Card>,
+        scenario_data: ScenarioData,
     ) -> Self {
         let mut rng = ChaCha20Rng::seed_from_u64(seed);
         let mut encounter_deck: Vec<Card> = encounter_cards;
         encounter_deck.shuffle(&mut rng);
+
+        let acts: Vec<ActInstance> = scenario_data
+            .acts
+            .iter()
+            .map(|act_data| ActInstance {
+                id: Uuid::new_v4(),
+                card: Card {
+                    id: Uuid::new_v4(),
+                    code: act_data.code.clone(),
+                    name: act_data.name.clone(),
+                    card_type: crate::engine::card::CardType::Act,
+                    class: Some(crate::engine::card::CardClass::Neutral),
+                    cost: None,
+                    xp: 0,
+                    icons: Default::default(),
+                    traits: Vec::new(),
+                    text: act_data.text.clone(),
+                    raw: act_data.raw.clone(),
+                },
+                progress: 0,
+            })
+            .collect();
+
+        let agendas: Vec<AgendaInstance> = scenario_data
+            .agendas
+            .iter()
+            .map(|agenda_data| AgendaInstance {
+                id: Uuid::new_v4(),
+                card: Card {
+                    id: Uuid::new_v4(),
+                    code: agenda_data.code.clone(),
+                    name: agenda_data.name.clone(),
+                    card_type: crate::engine::card::CardType::Agenda,
+                    class: Some(crate::engine::card::CardClass::Neutral),
+                    cost: None,
+                    xp: 0,
+                    icons: Default::default(),
+                    traits: Vec::new(),
+                    text: agenda_data.text.clone(),
+                    raw: agenda_data.raw.clone(),
+                },
+                doom: 0,
+                doom_threshold: agenda_data.doom_threshold,
+            })
+            .collect();
+
+        let locations: Vec<LocationInstance> = scenario_data
+            .locations
+            .iter()
+            .map(|location_data| LocationInstance {
+                id: Uuid::new_v4(),
+                card: Card {
+                    id: Uuid::new_v4(),
+                    code: location_data.code.clone(),
+                    name: location_data.name.clone(),
+                    card_type: crate::engine::card::CardType::Location,
+                    class: Some(crate::engine::card::CardClass::Neutral),
+                    cost: None,
+                    xp: 0,
+                    icons: Default::default(),
+                    traits: Vec::new(),
+                    text: location_data.text.clone(),
+                    raw: location_data.raw.clone(),
+                },
+                clues_remaining: location_data.clues,
+            })
+            .collect();
 
         let mut state = Self {
             id: Uuid::new_v4(),
@@ -55,11 +168,11 @@ impl GameState {
             encounter_deck,
             encounter_discard: Vec::new(),
             enemies_in_play: Vec::new(),
-            locations_in_play: default_locations(),
+            locations_in_play: locations,
             current_act_index: 0,
             current_agenda_index: 0,
-            acts: default_acts(),
-            agendas: default_agendas(),
+            acts,
+            agendas,
             game_status: GameStatus::Ongoing,
             log: Vec::new(),
         };
@@ -753,42 +866,6 @@ pub struct InvestigateResult {
     pub successes: i8,
     pub clues_discovered: u32,
     pub clues_remaining: u32,
-}
-
-/// Default starting locations used when no location cards exist in the encounter
-/// deck. Provides a playable investigation loop out of the box.
-fn default_locations() -> Vec<LocationInstance> {
-    let make_location = |code: &str, name: &str, text: &str, clues: u32| {
-        LocationInstance {
-            id: Uuid::new_v4(),
-            card: Card {
-                id: Uuid::new_v4(),
-                code: code.to_string(),
-                name: name.to_string(),
-                card_type: crate::engine::card::CardType::Location,
-                class: Some(crate::engine::card::CardClass::Neutral),
-                cost: None,
-                xp: 0,
-                icons: Default::default(),
-                traits: Vec::new(),
-                text: text.to_string(),
-                raw: serde_json::json!({
-                    "code": code,
-                    "name": name,
-                    "shroud": 1,
-                    "clues": clues,
-                    "type_code": "location",
-                }),
-            },
-            clues_remaining: clues,
-        }
-    };
-
-    vec![
-        make_location("loc-001", "Street", "A quiet, fog-lit street.", 2),
-        make_location("loc-002", "Building", "An old brick building with barred windows.", 2),
-        make_location("loc-003", "Alley", "A narrow alley reeking of garbage.", 1),
-    ]
 }
 
 /// Extract a location's shroud value from its raw ArkhamDB data. Defaults to 1.

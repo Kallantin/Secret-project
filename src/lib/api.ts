@@ -12,6 +12,7 @@ import type {
   MythosResult,
   PlaceDoomResult,
   PlayCardResult,
+  ScenarioData,
   SkillTestResult,
 } from "../types";
 
@@ -24,12 +25,14 @@ export async function newGame(
   scenario: string,
   seed?: number | null,
   encounterCards: CardTemplate[] = [],
+  scenarioData?: ScenarioData,
 ): Promise<GameState> {
   return invoke<GameState>("new_game", {
     campaign,
     scenario,
     seed: seed ?? null,
     encounter_cards: encounterCards,
+    scenario_data: scenarioData,
   });
 }
 

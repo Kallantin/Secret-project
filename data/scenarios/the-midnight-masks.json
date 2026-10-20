@@ -3,5 +3,129 @@
   "code": "01002",
   "name": "The Midnight Masks",
   "order": 2,
-  "chaos_bag": "standard"
+  "chaos_bag": "standard",
+  "acts": [
+    {
+      "code": "01002c",
+      "name": "The Midnight Masks",
+      "clue_cost": 3,
+      "text": "Investigate locations in Arkham to learn about the mysterious Midnight Masks organization.",
+      "raw": {
+        "code": "01002c",
+        "name": "The Midnight Masks",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01002d",
+      "name": "Unmask the Culprit",
+      "clue_cost": 3,
+      "text": "Confront the leader of the Midnight Masks and put an end to their scheme.",
+      "raw": {
+        "code": "01002d",
+        "name": "Unmask the Culprit",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "agendas": [
+    {
+      "code": "01003a",
+      "name": "The Masks Multiply",
+      "doom_threshold": 5,
+      "text": "The Midnight Masks spread their influence across Arkham. Stop them before they gain too much power.",
+      "raw": {
+        "code": "01003a",
+        "name": "The Masks Multiply",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 5,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01003b",
+      "name": "The Final Ritual",
+      "doom_threshold": 5,
+      "text": "The cultists begin their final ritual. You must stop them before it is completed.",
+      "raw": {
+        "code": "01003b",
+        "name": "The Final Ritual",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 5,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "locations": [
+    {
+      "code": "01006",
+      "name": "The Silver Twilight Lodge",
+      "clues": 2,
+      "shroud": 3,
+      "text": "An imposing building where the Silver Twilight Lodge holds its secret meetings.",
+      "raw": {
+        "code": "01006",
+        "name": "The Silver Twilight Lodge",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 3,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01007",
+      "name": "The Streets of Arkham",
+      "clues": 2,
+      "shroud": 1,
+      "text": "The foggy streets of Arkham at night, where danger lurks around every corner.",
+      "raw": {
+        "code": "01007",
+        "name": "The Streets of Arkham",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 1,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "01008",
+      "name": "The Miskatonic Library",
+      "clues": 3,
+      "shroud": 2,
+      "text": "The library contains rare tomes and forbidden knowledge about the occult.",
+      "raw": {
+        "code": "01008",
+        "name": "The Miskatonic Library",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 2,
+        "clues": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ]
 }

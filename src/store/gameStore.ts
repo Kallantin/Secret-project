@@ -11,6 +11,7 @@ import type {
   MoveResult,
   MythosResult,
   PlaceDoomResult,
+  ScenarioData,
   SkillTestResult,
 } from "../types";
 import { useMultiplayerStore } from "./multiplayerStore";
@@ -73,6 +74,7 @@ interface GameStore {
     seed?: number | null,
     investigators?: InvestigatorSelection[],
     encounterCards?: CardTemplate[],
+    scenarioData?: ScenarioData,
   ) => Promise<void>;
   addInvestigator: (investigator: InvestigatorSelection) => Promise<void>;
   nextPhase: () => Promise<void>;
@@ -138,7 +140,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ game });
   },
 
-  startNewGame: async (campaign, scenario, seed, investigators, encounterCards) => {
+  startNewGame: async (campaign, scenario, seed, investigators, encounterCards, scenarioData) => {
     set({ busy: true, error: null });
     try {
       const game = await apiNewGame(
@@ -146,6 +148,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         scenario ?? "The Gathering",
         seed ?? null,
         encounterCards ?? [],
+        scenarioData,
       );
       set({ game, lastToken: null });
 

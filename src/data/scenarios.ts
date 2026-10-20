@@ -9,6 +9,34 @@ export interface ScenarioTemplate {
   name: string;
   order: number;
   chaos_bag: string;
+  acts: ScenarioActData[];
+  agendas: ScenarioAgendaData[];
+  locations: ScenarioLocationData[];
+}
+
+export interface ScenarioActData {
+  code: string;
+  name: string;
+  text: string;
+  clue_cost: number;
+  raw: Record<string, unknown>;
+}
+
+export interface ScenarioAgendaData {
+  code: string;
+  name: string;
+  text: string;
+  doom_threshold: number;
+  raw: Record<string, unknown>;
+}
+
+export interface ScenarioLocationData {
+  code: string;
+  name: string;
+  text: string;
+  clues: number;
+  shroud: number;
+  raw: Record<string, unknown>;
 }
 
 const records: Record<string, ScenarioTemplate> = {
