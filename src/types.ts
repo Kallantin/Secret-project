@@ -62,6 +62,28 @@ export interface FightResult {
   skill_test: SkillTestResult;
 }
 
+export interface LocationInstance {
+  id: string;
+  card: Card;
+  clues_remaining: number;
+}
+
+export interface MoveResult {
+  investigator_id: string;
+  location_instance_id: string;
+  location_name: string;
+}
+
+export interface InvestigateResult {
+  investigator_id: string;
+  location_instance_id: string;
+  shroud: number;
+  test_total: number;
+  successes: number;
+  clues_discovered: number;
+  clues_remaining: number;
+}
+
 export interface SkillIcons {
   willpower: number;
   intellect: number;
@@ -116,6 +138,8 @@ export interface Investigator {
   is_defeated: boolean;
   /// Enemy instance IDs currently engaged with this investigator.
   engaged_enemies: string[];
+  /// Location instance ID the investigator is currently at, if any.
+  location_id: string | null;
   deck: Deck;
 }
 
@@ -131,5 +155,6 @@ export interface GameState {
   encounter_deck: Card[];
   encounter_discard: Card[];
   enemies_in_play: EnemyInstance[];
+  locations_in_play: LocationInstance[];
   log: string[];
 }

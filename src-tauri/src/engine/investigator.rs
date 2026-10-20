@@ -81,6 +81,8 @@ pub struct Investigator {
     pub is_defeated: bool,
     /// Enemy instance IDs currently engaged with this investigator.
     pub engaged_enemies: Vec<Uuid>,
+    /// Location instance ID the investigator is currently at, if any.
+    pub location_id: Option<Uuid>,
     pub deck: Deck,
 }
 
@@ -113,6 +115,7 @@ impl Investigator {
             clues: 0,
             is_defeated: false,
             engaged_enemies: Vec::new(),
+            location_id: None,
             deck: Deck::new(),
         }
     }

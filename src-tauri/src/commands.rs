@@ -6,7 +6,8 @@ use tauri::State;
 use crate::engine::card::{Card, SkillIcon};
 use crate::engine::chaos::ChaosToken;
 use crate::engine::game_state::{
-    GameState, EngageResult, FightResult, MythosResult, PlayCardResult, SkillTestResult,
+    GameState, EngageResult, FightResult, InvestigateResult, MoveResult, MythosResult,
+    PlayCardResult, SkillTestResult,
 };
 use crate::engine::investigator::Investigator;
 use crate::error::{GameError, Result};
@@ -192,6 +193,33 @@ pub fn play_card(
     let mut guard = state.lock_game()?;
     let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
     game.play_card(investigator_id, card_id)
+}
+
+#[tauri::command]
+pub fn move_to_location(
+    state: State<'_, AppState>,
+    investigator_id: String,
+    location_instance_id: String,
+) -> Result<MoveResult> {
+    let investigator_id = Uuid::parse_str(&investigator_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid investigator id: {investigator_id}")))?;
+    let location_instance_id = Uuid::parse_str(&location_instance_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid location instance id: {location_instance_id}")))?;
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.move_to_location(investigator_id, location_instance_id)
+}
+
+#[tauri::command]
+pub fn investigate(
+    state: State<'_, AppState>,
+    investigator_id: String,
+) -> Result<InvestigateResult> {
+    let investigator_id = Uuid::parse_str(&investigator_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid investigator id: {investigator_id}")))?;
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.investigate(investigator_id)
 }
 
 #[tauri::command]

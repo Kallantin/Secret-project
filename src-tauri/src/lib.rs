@@ -20,6 +20,8 @@ pub fn run() {
             commands::mythos_phase,
             commands::engage,
             commands::fight,
+            commands::move_to_location,
+            commands::investigate,
             commands::play_card,
             commands::save_game,
             commands::load_game,

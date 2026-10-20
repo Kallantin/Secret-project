@@ -23,6 +23,7 @@ pub struct GameState {
     pub encounter_deck: Vec<Card>,
     pub encounter_discard: Vec<Card>,
     pub enemies_in_play: Vec<EnemyInstance>,
+    pub locations_in_play: Vec<LocationInstance>,
     pub log: Vec<String>,
 }
 
@@ -49,6 +50,7 @@ impl GameState {
             encounter_deck,
             encounter_discard: Vec::new(),
             enemies_in_play: Vec::new(),
+            locations_in_play: default_locations(),
             log: Vec::new(),
         };
         let message = format!(
@@ -196,6 +198,22 @@ impl GameState {
                 Ok(MythosResult {
                     card,
                     spawned_enemy: Some(instance.card.clone()),
+                    discarded: false,
+                })
+            }
+            crate::engine::card::CardType::Location => {
+                let clues = location_clues(&card);
+                let instance = LocationInstance {
+                    id: Uuid::new_v4(),
+                    card: card.clone(),
+                    clues_remaining: clues,
+                };
+                self.locations_in_play.push(instance.clone());
+                let message = format!("Location enters play: {} ({} clues)", card.name, clues);
+                self.log(message);
+                Ok(MythosResult {
+                    card,
+                    spawned_enemy: None,
                     discarded: false,
                 })
             }
@@ -390,6 +408,121 @@ impl GameState {
         })
     }
 
+    /// Move the active investigator to a location in play.
+    pub fn move_to_location(
+        &mut self,
+        investigator_id: Uuid,
+        location_instance_id: Uuid,
+    ) -> Result<MoveResult> {
+        let investigator = self
+            .investigator(investigator_id)
+            .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+
+        let location = self
+            .locations_in_play
+            .iter()
+            .find(|l| l.id == location_instance_id)
+            .ok_or_else(|| GameError::CardNotFound(location_instance_id.to_string()))?;
+
+        let investigator_name = investigator.name.clone();
+        let location_name = location.card.name.clone();
+
+        // Spend one action to move.
+        self.spend_action(investigator_id)?;
+
+        let investigator = self
+            .investigator_mut(investigator_id)
+            .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+        investigator.location_id = Some(location_instance_id);
+
+        let message = format!("{investigator_name} moves to {location_name}");
+        self.log(message);
+
+        Ok(MoveResult {
+            investigator_id,
+            location_instance_id,
+            location_name,
+        })
+    }
+
+    /// Investigate at the active investigator's current location: spend an action,
+    /// make an intellect test, and discover clues equal to successes above the
+    /// location's shroud value.
+    pub fn investigate(
+        &mut self,
+        investigator_id: Uuid,
+    ) -> Result<InvestigateResult> {
+        let investigator = self
+            .investigator(investigator_id)
+            .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+
+        let location_id = investigator
+            .location_id
+            .ok_or_else(|| GameError::RuleViolation("investigator is not at a location".into()))?;
+
+        let location_index = self
+            .locations_in_play
+            .iter()
+            .position(|l| l.id == location_id)
+            .ok_or_else(|| GameError::CardNotFound(location_id.to_string()))?;
+
+        let shroud = location_shroud_value(&self.locations_in_play[location_index].card);
+        let clues_remaining = self.locations_in_play[location_index].clues_remaining;
+
+        if clues_remaining == 0 {
+            return Err(GameError::RuleViolation(
+                "no clues remain at this location".into(),
+            ));
+        }
+
+        let investigator_name = investigator.name.clone();
+
+        // Spend one action to investigate.
+        self.spend_action(investigator_id)?;
+
+        // Resolve intellect skill test.
+        let test = self.skill_test(investigator_id, SkillIcon::Intellect)?;
+        let successes = test.total.saturating_sub(shroud).max(0);
+        let clues_discovered = (successes as u32).min(clues_remaining);
+
+        let location = &mut self.locations_in_play[location_index];
+        let location_name = location.card.name.clone();
+        location.clues_remaining = location.clues_remaining.saturating_sub(clues_discovered);
+        let clues_remaining_after = location.clues_remaining;
+
+        let investigator = self
+            .investigator_mut(investigator_id)
+            .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+        investigator.clues += clues_discovered as i32;
+
+        let message = if clues_discovered > 0 {
+            format!(
+                "{} discovers {} clue{} at {}",
+                investigator_name,
+                clues_discovered,
+                if clues_discovered == 1 { "" } else { "s" },
+                location_name
+            )
+        } else {
+            format!(
+                "{} fails to discover clues at {}",
+                investigator_name,
+                location_name
+            )
+        };
+        self.log(message);
+
+        Ok(InvestigateResult {
+            investigator_id,
+            location_instance_id: location_id,
+            shroud,
+            test_total: test.total,
+            successes,
+            clues_discovered,
+            clues_remaining: clues_remaining_after,
+        })
+    }
+
     pub fn log(&mut self, message: impl Into<String>) {
         self.log.push(message.into());
     }
@@ -454,6 +587,84 @@ fn skill_as_str(skill: SkillIcon) -> &'static str {
         SkillIcon::Agility => "Agility",
         SkillIcon::Wild => "Wild",
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocationInstance {
+    pub id: Uuid,
+    pub card: Card,
+    pub clues_remaining: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MoveResult {
+    pub investigator_id: Uuid,
+    pub location_instance_id: Uuid,
+    pub location_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvestigateResult {
+    pub investigator_id: Uuid,
+    pub location_instance_id: Uuid,
+    pub shroud: i8,
+    pub test_total: i8,
+    pub successes: i8,
+    pub clues_discovered: u32,
+    pub clues_remaining: u32,
+}
+
+/// Default starting locations used when no location cards exist in the encounter
+/// deck. Provides a playable investigation loop out of the box.
+fn default_locations() -> Vec<LocationInstance> {
+    let make_location = |code: &str, name: &str, text: &str, clues: u32| {
+        LocationInstance {
+            id: Uuid::new_v4(),
+            card: Card {
+                id: Uuid::new_v4(),
+                code: code.to_string(),
+                name: name.to_string(),
+                card_type: crate::engine::card::CardType::Location,
+                class: Some(crate::engine::card::CardClass::Neutral),
+                cost: None,
+                xp: 0,
+                icons: Default::default(),
+                traits: Vec::new(),
+                text: text.to_string(),
+                raw: serde_json::json!({
+                    "code": code,
+                    "name": name,
+                    "shroud": 1,
+                    "clues": clues,
+                    "type_code": "location",
+                }),
+            },
+            clues_remaining: clues,
+        }
+    };
+
+    vec![
+        make_location("loc-001", "Street", "A quiet, fog-lit street.", 2),
+        make_location("loc-002", "Building", "An old brick building with barred windows.", 2),
+        make_location("loc-003", "Alley", "A narrow alley reeking of garbage.", 1),
+    ]
+}
+
+/// Extract a location's shroud value from its raw ArkhamDB data. Defaults to 1.
+fn location_shroud_value(card: &Card) -> i8 {
+    card.raw
+        .get("shroud")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(1) as i8
+}
+
+/// Extract a location's clue count from its raw ArkhamDB data. Defaults to 0.
+fn location_clues(card: &Card) -> u32 {
+    card.raw
+        .get("clues")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as u32)
+        .unwrap_or(0)
 }
 
 /// Extract an enemy's health from its raw ArkhamDB data. Defaults to 1.

@@ -6,6 +6,8 @@ import type {
   FightResult,
   GameState,
   Investigator,
+  InvestigateResult,
+  MoveResult,
   MythosResult,
   PlayCardResult,
   SkillTestResult,
@@ -111,6 +113,22 @@ export async function fight(
   return invoke<FightResult>("fight", {
     investigator_id: investigatorId,
     enemy_instance_id: enemyInstanceId,
+  });
+}
+
+export async function moveToLocation(
+  investigatorId: string,
+  locationInstanceId: string,
+): Promise<MoveResult> {
+  return invoke<MoveResult>("move_to_location", {
+    investigator_id: investigatorId,
+    location_instance_id: locationInstanceId,
+  });
+}
+
+export async function investigate(investigatorId: string): Promise<InvestigateResult> {
+  return invoke<InvestigateResult>("investigate", {
+    investigator_id: investigatorId,
   });
 }
 

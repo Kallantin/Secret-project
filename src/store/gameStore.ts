@@ -6,6 +6,8 @@ import type {
   EngageResult,
   FightResult,
   GameState,
+  InvestigateResult,
+  MoveResult,
   MythosResult,
   SkillTestResult,
 } from "../types";
@@ -16,8 +18,10 @@ import {
   engage as apiEngage,
   fight as apiFight,
   getGameState,
+  investigate as apiInvestigate,
   isTauri,
   loadGame as apiLoadGame,
+  moveToLocation as apiMoveToLocation,
   newGame as apiNewGame,
   mythosPhase as apiMythosPhase,
   playCard as apiPlayCard,
@@ -87,6 +91,13 @@ interface GameStore {
   fightEnemy: (investigatorId: string, enemyInstanceId: string) => Promise<void>;
   lastEngageResult: EngageResult | null;
   lastFightResult: FightResult | null;
+  lastInvestigateResult: InvestigateResult | null;
+  lastMoveResult: MoveResult | null;
+  moveToLocation: (
+    investigatorId: string,
+    locationInstanceId: string,
+  ) => Promise<void>;
+  investigate: (investigatorId: string) => Promise<void>;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -101,6 +112,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   lastMythosResult: null,
   lastEngageResult: null,
   lastFightResult: null,
+  lastInvestigateResult: null,
+  lastMoveResult: null,
 
   init: async () => {
     if (!get().inTauri) {
@@ -333,6 +346,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
     try {
       const result = await apiFight(investigatorId, enemyInstanceId);
       set({ lastFightResult: result, busy: false });
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  moveToLocation: async (investigatorId: string, locationInstanceId: string) => {
+    set({ busy: true, error: null });
+    try {
+      const result = await apiMoveToLocation(investigatorId, locationInstanceId);
+      set({ lastMoveResult: result, busy: false });
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  investigate: async (investigatorId: string) => {
+    set({ busy: true, error: null });
+    try {
+      const result = await apiInvestigate(investigatorId);
+      set({ lastInvestigateResult: result, busy: false });
       await get().refresh();
     } catch (error) {
       set({ error: message(error) });
