@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import CardLibrary from "./components/CardLibrary";
 import ChaosBagPanel from "./components/ChaosBagPanel";
 import ControlBar from "./components/ControlBar";
 import GameLog from "./components/GameLog";
@@ -74,8 +75,9 @@ export default function App() {
           <GameLog entries={game?.log ?? []} />
         </section>
 
-        <aside className="overflow-auto">
+        <aside className="flex flex-col gap-4 overflow-auto">
           <ChaosBagPanel />
+          <CardLibrary />
         </aside>
       </main>
 
