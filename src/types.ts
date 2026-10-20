@@ -17,6 +17,16 @@ export interface ChaosBag {
   draws: number;
 }
 
+export interface SkillTestResult {
+  investigator_id: string;
+  investigator_name: string;
+  skill: string;
+  stat_value: number;
+  token: ChaosToken;
+  token_modifier: number;
+  total: number;
+}
+
 export interface SkillIcons {
   willpower: number;
   intellect: number;

@@ -14,6 +14,9 @@ pub fn run() {
             commands::get_game_state,
             commands::advance_phase,
             commands::draw_chaos_token,
+            commands::skill_test,
+            commands::spend_action,
+            commands::reset_turn,
             commands::save_game,
             commands::load_game,
         ])

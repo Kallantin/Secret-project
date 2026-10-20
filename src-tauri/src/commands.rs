@@ -2,10 +2,12 @@ use std::sync::Mutex;
 
 use tauri::State;
 
+use crate::engine::card::SkillIcon;
 use crate::engine::chaos::ChaosToken;
-use crate::engine::game_state::GameState;
+use crate::engine::game_state::{GameState, SkillTestResult};
 use crate::engine::investigator::Investigator;
 use crate::error::{GameError, Result};
+use uuid::Uuid;
 
 const DEFAULT_SEED: u64 = 0xA2C4_1F0D;
 
@@ -85,6 +87,44 @@ pub fn draw_chaos_token(state: State<'_, AppState>) -> Result<ChaosToken> {
     let mut guard = state.lock_game()?;
     let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
     Ok(game.draw_chaos_token())
+}
+
+#[tauri::command]
+pub fn skill_test(
+    state: State<'_, AppState>,
+    investigator_id: String,
+    skill: String,
+) -> Result<SkillTestResult> {
+    let id = Uuid::parse_str(&investigator_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid investigator id: {investigator_id}")))?;
+    let skill_enum = match skill.to_lowercase().as_str() {
+        "willpower" => SkillIcon::Willpower,
+        "intellect" => SkillIcon::Intellect,
+        "combat" => SkillIcon::Combat,
+        "agility" => SkillIcon::Agility,
+        _ => return Err(GameError::RuleViolation(format!("unknown skill: {skill}"))),
+    };
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.skill_test(id, skill_enum)
+}
+
+#[tauri::command]
+pub fn spend_action(state: State<'_, AppState>, investigator_id: String) -> Result<GameState> {
+    let id = Uuid::parse_str(&investigator_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid investigator id: {investigator_id}")))?;
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.spend_action(id)?;
+    Ok(game.clone())
+}
+
+#[tauri::command]
+pub fn reset_turn(state: State<'_, AppState>) -> Result<GameState> {
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.reset_turn();
+    Ok(game.clone())
 }
 
 #[tauri::command]

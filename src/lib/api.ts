@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { ChaosToken, GameState, Investigator } from "../types";
+import type { ChaosToken, GameState, Investigator, SkillTestResult } from "../types";
 
 export function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -49,6 +49,26 @@ export async function advancePhase(): Promise<void> {
 
 export async function drawChaosToken(): Promise<ChaosToken> {
   return invoke<ChaosToken>("draw_chaos_token");
+}
+
+export async function skillTest(
+  investigatorId: string,
+  skill: string,
+): Promise<SkillTestResult> {
+  return invoke<SkillTestResult>("skill_test", {
+    investigator_id: investigatorId,
+    skill,
+  });
+}
+
+export async function spendAction(investigatorId: string): Promise<GameState> {
+  return invoke<GameState>("spend_action", {
+    investigator_id: investigatorId,
+  });
+}
+
+export async function resetTurn(): Promise<GameState> {
+  return invoke<GameState>("reset_turn");
 }
 
 export async function saveGame(path: string): Promise<void> {

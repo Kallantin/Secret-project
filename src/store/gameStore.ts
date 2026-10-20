@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ChaosToken, DeckSlot, GameState } from "../types";
+import type { ChaosToken, DeckSlot, GameState, SkillTestResult } from "../types";
 import {
   addInvestigator as apiAddInvestigator,
   advancePhase as apiAdvancePhase,
@@ -8,7 +8,10 @@ import {
   isTauri,
   loadGame as apiLoadGame,
   newGame as apiNewGame,
+  resetTurn as apiResetTurn,
   saveGame as apiSaveGame,
+  skillTest as apiSkillTest,
+  spendAction as apiSpendAction,
 } from "../lib/api";
 
 function message(error: unknown): string {
@@ -59,6 +62,10 @@ interface GameStore {
   setDeckCardQuantity: (code: string, quantity: number) => Promise<void>;
   clearDeckBuilder: () => Promise<void>;
   saveDeckToInvestigator: () => Promise<void>;
+  performSkillTest: (investigatorId: string, skill: string) => Promise<void>;
+  spendInvestigatorAction: (investigatorId: string) => Promise<void>;
+  resetInvestigatorTurn: () => Promise<void>;
+  lastSkillTest: SkillTestResult | null;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -69,6 +76,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   inTauri: isTauri(),
   deckBuilderInvestigator: null,
   deckBuilderCards: [],
+  lastSkillTest: null,
 
   init: async () => {
     if (!get().inTauri) {
@@ -219,6 +227,41 @@ export const useGameStore = create<GameStore>((set, get) => ({
         ),
       };
       set({ game: updated });
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  performSkillTest: async (investigatorId, skill) => {
+    set({ busy: true, error: null });
+    try {
+      const result = await apiSkillTest(investigatorId, skill);
+      set({ lastSkillTest: result, busy: false });
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error), busy: false });
+    }
+  },
+
+  spendInvestigatorAction: async (investigatorId) => {
+    set({ busy: true, error: null });
+    try {
+      await apiSpendAction(investigatorId);
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  resetInvestigatorTurn: async () => {
+    set({ busy: true, error: null });
+    try {
+      await apiResetTurn();
+      await get().refresh();
     } catch (error) {
       set({ error: message(error) });
     } finally {

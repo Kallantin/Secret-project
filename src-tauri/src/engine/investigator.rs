@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::card::Card;
+use super::SkillIcon;
 use crate::error::{GameError, Result};
 use uuid::Uuid;
 
@@ -113,9 +114,15 @@ impl Investigator {
         }
     }
 
-    /// Value for a numeric skill, given a wild-icon bonus.
-    pub fn skill_value(&self, willpower: i8, intellect: i8, combat: i8, agility: i8) -> i8 {
-        willpower + intellect + combat + agility
+    /// Value for a single skill test, before chaos token modifiers.
+    pub fn skill_value(&self, skill: SkillIcon) -> i8 {
+        match skill {
+            SkillIcon::Willpower => self.willpower,
+            SkillIcon::Intellect => self.intellect,
+            SkillIcon::Combat => self.combat,
+            SkillIcon::Agility => self.agility,
+            SkillIcon::Wild => 0,
+        }
     }
 
     pub fn reset_actions(&mut self) {

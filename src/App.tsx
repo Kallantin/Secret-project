@@ -6,6 +6,7 @@ import DeckBuilder from "./components/DeckBuilder";
 import GameLog from "./components/GameLog";
 import InvestigatorCard from "./components/InvestigatorCard";
 import InvestigatorPicker from "./components/InvestigatorPicker";
+import InvestigatorTurnPanel from "./components/InvestigatorTurnPanel";
 import { type InvestigatorTemplate } from "./data/investigators";
 import { useGameStore } from "./store/gameStore";
 import type { Investigator } from "./types";
@@ -78,6 +79,7 @@ export default function App() {
 
         <aside className="flex flex-col gap-4 overflow-auto">
           <ChaosBagPanel />
+          <InvestigatorTurnPanel />
           <CardLibrary />
           <DeckBuilder />
         </aside>
