@@ -110,6 +110,8 @@ interface GameStore {
   placeDoom: (amount: number) => Promise<void>;
   advanceAct: (investigatorId: string, cluesSpent: number) => Promise<void>;
   spendXp: (investigatorId: string, cardCode: string, xpCost: number) => Promise<void>;
+  applyGameState: (gameState: unknown) => void;
+  broadcastGameState: () => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -421,6 +423,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
+  applyGameState: (gameState: GameState) => {
+    set({ game: gameState });
+  },
+
+  broadcastGameState: async () => {
+    const { game } = get();
+    if (game) {
+      useMultiplayerStore.getState().broadcastAction('game_state_sync', game);
+    }
+  },
+
   playInvestigatorCard: async (investigatorId: string, cardId: string) => {
     set({ busy: true, error: null });
     try {
@@ -591,6 +604,14 @@ useMultiplayerStore.getState().setRemoteActionHandler((action) => {
       break;
     case 'draw_chaos_token':
       void state.drawToken();
+      break;
+    case 'game_state_sync':
+      void state.applyGameState(action.payload);
+      break;
+    case 'request_state_sync':
+      if (state.game) {
+        void state.broadcastGameState();
+      }
       break;
     default:
       break;

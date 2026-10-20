@@ -19,8 +19,8 @@ interface MultiplayerStore {
   broadcastAction: (type: string, payload: unknown) => void;
   setPlayerName: (name: string) => void;
   clearError: () => void;
-  onRemoteAction: ((action: { type: string; payload: unknown; clientId: string }) => void) | null;
-  setRemoteActionHandler: (handler: (action: { type: string; payload: unknown; clientId: string }) => void) => void;
+  onRemoteAction: ((action: { type: string; payload: unknown; clientId: string | null }) => void) | null;
+  setRemoteActionHandler: (handler: (action: { type: string; payload: unknown; clientId: string | null }) => void) => void;
 }
 
 export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
@@ -53,6 +53,12 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
             break;
           case 'room_state':
             set({ roomId: message.roomId, players: message.players });
+            // Request state sync if we don't have a game yet
+            get().onRemoteAction?.({
+              type: 'request_state_sync',
+              payload: null,
+              clientId: null,
+            });
             break;
           case 'player_joined':
             set((state) => ({
@@ -69,6 +75,13 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
               type: message.type,
               payload: message.payload,
               clientId: message.clientId,
+            });
+            break;
+          case 'game_state_sync':
+            get().onRemoteAction?.({
+              type: 'game_state_sync',
+              payload: message.gameState,
+              clientId: null,
             });
             break;
           case 'error':
@@ -142,7 +155,7 @@ export const useMultiplayerStore = create<MultiplayerStore>((set, get) => ({
     set({ error: null });
   },
 
-  setRemoteActionHandler: (handler) => {
+  setRemoteActionHandler: (handler: (action: { type: string; payload: unknown; clientId: string | null }) => void) => {
     set({ onRemoteAction: handler });
   },
 }));

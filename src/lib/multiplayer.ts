@@ -3,7 +3,9 @@ export type ClientMessage =
   | { type: 'join_room'; roomId: string; name?: string }
   | { type: 'leave_room' }
   | { type: 'action'; payload: unknown }
-  | { type: 'ping' };
+  | { type: 'ping' }
+  | { type: 'request_state_sync' }
+  | { type: 'game_state_sync'; gameState: unknown };
 
 export type ServerMessage =
   | { type: 'welcome'; clientId: string; name: string }
@@ -12,7 +14,8 @@ export type ServerMessage =
   | { type: 'player_left'; clientId: string }
   | { type: 'action'; clientId: string; payload: unknown }
   | { type: 'pong' }
-  | { type: 'error'; message: string };
+  | { type: 'error'; message: string }
+  | { type: 'game_state_sync'; gameState: unknown };
 
 export type PlayerInfo = {
   clientId: string;
@@ -189,5 +192,13 @@ export class MultiplayerClient {
 
   ping(): void {
     this.send({ type: 'ping' });
+  }
+
+  requestStateSync(): void {
+    this.send({ type: 'request_state_sync' });
+  }
+
+  sendGameStateSync(gameState: unknown): void {
+    this.send({ type: 'game_state_sync', gameState });
   }
 }
