@@ -79,6 +79,8 @@ pub struct Investigator {
     pub actions_remaining: u8,
     pub clues: i32,
     pub is_defeated: bool,
+    /// Experience points earned across campaign play.
+    pub xp: i32,
     /// Enemy instance IDs currently engaged with this investigator.
     pub engaged_enemies: Vec<Uuid>,
     /// Location instance ID the investigator is currently at, if any.
@@ -114,6 +116,7 @@ impl Investigator {
             actions_remaining: DEFAULT_ACTIONS,
             clues: 0,
             is_defeated: false,
+            xp: 0,
             engaged_enemies: Vec::new(),
             location_id: None,
             deck: Deck::new(),

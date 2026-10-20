@@ -203,6 +203,8 @@ export interface Investigator {
   actions_remaining: number;
   clues: number;
   is_defeated: boolean;
+  /// Experience points earned across campaign play.
+  xp: number;
   /// Enemy instance IDs currently engaged with this investigator.
   engaged_enemies: string[];
   /// Location instance ID the investigator is currently at, if any.
@@ -228,5 +230,7 @@ export interface GameState {
   acts: ActInstance[];
   agendas: AgendaInstance[];
   game_status: GameStatus;
+  /// Scenario codes completed in this campaign.
+  completed_scenarios: string[];
   log: string[];
 }

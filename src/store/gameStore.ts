@@ -109,6 +109,7 @@ interface GameStore {
   investigate: (investigatorId: string) => Promise<void>;
   placeDoom: (amount: number) => Promise<void>;
   advanceAct: (investigatorId: string, cluesSpent: number) => Promise<void>;
+  spendXp: (investigatorId: string, cardCode: string, xpCost: number) => Promise<void>;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -358,14 +359,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
-  playInvestigatorCard: async (investigatorId, cardId) => {
+  fightEnemy: async (investigatorId, enemyInstanceId) => {
     set({ busy: true, error: null });
     try {
-      await apiPlayCard(investigatorId, cardId);
+      const result = await apiFight(investigatorId, enemyInstanceId);
+      set({ lastFightResult: result, busy: false });
       await get().refresh();
-      useMultiplayerStore.getState().broadcastAction('play_card', {
+      useMultiplayerStore.getState().broadcastAction('fight', {
         investigatorId,
-        cardId,
+        enemyInstanceId,
       });
     } catch (error) {
       set({ error: message(error) });
@@ -374,7 +376,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
-  engageEnemy: async (investigatorId, enemyInstanceId) => {
+  engageEnemy: async (investigatorId: string, enemyInstanceId: string) => {
     set({ busy: true, error: null });
     try {
       const result = await apiEngage(investigatorId, enemyInstanceId);
@@ -391,15 +393,42 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
-  fightEnemy: async (investigatorId, enemyInstanceId) => {
+  spendXp: async (investigatorId: string, cardCode: string, xpCost: number) => {
     set({ busy: true, error: null });
     try {
-      const result = await apiFight(investigatorId, enemyInstanceId);
-      set({ lastFightResult: result, busy: false });
-      await get().refresh();
-      useMultiplayerStore.getState().broadcastAction('fight', {
+      const { game } = get();
+      const investigator = game?.investigators.find((inv) => inv.id === investigatorId);
+      if (!investigator) {
+        set({ error: "Investigator not found" });
+        return;
+      }
+      if (investigator.xp < xpCost) {
+        set({ error: "Not enough XP" });
+        return;
+      }
+      investigator.xp -= xpCost;
+      investigator.deck.decklist.push({ code: cardCode, quantity: 1 });
+      set({ game });
+      useMultiplayerStore.getState().broadcastAction('spend_xp', {
         investigatorId,
-        enemyInstanceId,
+        cardCode,
+        xpCost,
+      });
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  playInvestigatorCard: async (investigatorId: string, cardId: string) => {
+    set({ busy: true, error: null });
+    try {
+      await apiPlayCard(investigatorId, cardId);
+      await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('play_card', {
+        investigatorId,
+        cardId,
       });
     } catch (error) {
       set({ error: message(error) });
@@ -543,6 +572,15 @@ useMultiplayerStore.getState().setRemoteActionHandler((action) => {
         enemyInstanceId: string;
       };
       void state.fightEnemy(investigatorId, enemyInstanceId);
+      break;
+    }
+    case 'spend_xp': {
+      const { investigatorId, cardCode, xpCost } = action.payload as {
+        investigatorId: string;
+        cardCode: string;
+        xpCost: number;
+      };
+      void state.spendXp(investigatorId, cardCode, xpCost);
       break;
     }
     case 'advance_phase':

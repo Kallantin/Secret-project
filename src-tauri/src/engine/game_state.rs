@@ -74,6 +74,8 @@ pub struct GameState {
     pub acts: Vec<ActInstance>,
     pub agendas: Vec<AgendaInstance>,
     pub game_status: GameStatus,
+    /// Scenario codes that have been completed in this campaign.
+    pub completed_scenarios: Vec<String>,
     pub log: Vec<String>,
 }
 
@@ -174,6 +176,7 @@ impl GameState {
             acts,
             agendas,
             game_status: GameStatus::Ongoing,
+            completed_scenarios: Vec::new(),
             log: Vec::new(),
         };
         let message = format!(
@@ -727,11 +730,13 @@ impl GameState {
 
         // Step 2: If the clue cost was met, reset progress and advance.
         let mut next_act = None;
+        let mut scenario_completed = false;
         if advanced {
             self.acts[act_index].progress = 0;
             self.current_act_index += 1;
             if self.current_act_index >= self.acts.len() {
                 self.game_status = GameStatus::Won;
+                scenario_completed = true;
             } else {
                 next_act = Some(self.acts[self.current_act_index].card.name.clone());
             }
@@ -758,6 +763,21 @@ impl GameState {
             if clues_spent == 1 { "" } else { "s" }
         );
         self.log(message);
+
+        // Step 4: If scenario completed, award XP and mark scenario complete.
+            if scenario_completed {
+                if !self.completed_scenarios.contains(&self.scenario) {
+                    self.completed_scenarios.push(self.scenario.clone());
+                }
+                let mut messages: Vec<String> = Vec::new();
+                for inv in &mut self.investigators {
+                    inv.xp += 2; // Award 2 XP per completed scenario
+                    messages.push(format!("{} gains 2 XP for completing scenario", inv.name));
+                }
+                for msg in messages {
+                    self.log(msg);
+                }
+            }
 
         Ok(AdvanceActResult {
             act_index,
