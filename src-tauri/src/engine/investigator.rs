@@ -79,6 +79,8 @@ pub struct Investigator {
     pub actions_remaining: u8,
     pub clues: i32,
     pub is_defeated: bool,
+    /// Enemy instance IDs currently engaged with this investigator.
+    pub engaged_enemies: Vec<Uuid>,
     pub deck: Deck,
 }
 
@@ -110,6 +112,7 @@ impl Investigator {
             actions_remaining: DEFAULT_ACTIONS,
             clues: 0,
             is_defeated: false,
+            engaged_enemies: Vec::new(),
             deck: Deck::new(),
         }
     }

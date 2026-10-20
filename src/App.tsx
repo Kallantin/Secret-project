@@ -8,6 +8,7 @@ import InvestigatorCard from "./components/InvestigatorCard";
 import InvestigatorPicker from "./components/InvestigatorPicker";
 import InvestigatorTurnPanel from "./components/InvestigatorTurnPanel";
 import MythosPhasePanel from "./components/MythosPhasePanel";
+import CombatPanel from "./components/CombatPanel";
 import { type InvestigatorTemplate } from "./data/investigators";
 import { ENCOUNTER_CARDS } from "./data/cards";
 import { useGameStore } from "./store/gameStore";
@@ -82,6 +83,7 @@ export default function App() {
         <aside className="flex flex-col gap-4 overflow-auto">
           <ChaosBagPanel />
           <MythosPhasePanel />
+          <CombatPanel />
           <InvestigatorTurnPanel />
           <CardLibrary />
           <DeckBuilder />

@@ -22,7 +22,7 @@ pub struct GameState {
     pub chaos_bag: ChaosBag,
     pub encounter_deck: Vec<Card>,
     pub encounter_discard: Vec<Card>,
-    pub enemies_in_play: Vec<Card>,
+    pub enemies_in_play: Vec<EnemyInstance>,
     pub log: Vec<String>,
 }
 
@@ -183,12 +183,19 @@ impl GameState {
 
         match card.card_type {
             crate::engine::card::CardType::Enemy => {
-                self.enemies_in_play.push(card.clone());
+                let health = enemy_health(&card);
+                let instance = EnemyInstance {
+                    id: Uuid::new_v4(),
+                    card: card.clone(),
+                    health,
+                    engaged_with: None,
+                };
+                self.enemies_in_play.push(instance.clone());
                 let message = format!("Enemy enters play: {}", card.name);
                 self.log(message);
                 Ok(MythosResult {
-                    card: card.clone(),
-                    spawned_enemy: Some(card),
+                    card,
+                    spawned_enemy: Some(instance.card.clone()),
                     discarded: false,
                 })
             }
@@ -201,6 +208,139 @@ impl GameState {
                 })
             }
         }
+    }
+
+    /// Engage an enemy with the active investigator.
+    pub fn engage(
+        &mut self,
+        investigator_id: Uuid,
+        enemy_instance_id: Uuid,
+    ) -> Result<EngageResult> {
+        let investigator = self
+            .investigator(investigator_id)
+            .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+        if investigator.engaged_enemies.contains(&enemy_instance_id) {
+            return Err(GameError::RuleViolation(
+                "already engaged with this enemy".into(),
+            ));
+        }
+
+        let enemy = self
+            .enemies_in_play
+            .iter()
+            .find(|e| e.id == enemy_instance_id)
+            .ok_or_else(|| GameError::CardNotFound(enemy_instance_id.to_string()))?;
+        if enemy.engaged_with.is_some() {
+            return Err(GameError::RuleViolation(
+                "enemy is already engaged with another investigator".into(),
+            ));
+        }
+
+        let investigator_name = investigator.name.clone();
+        let enemy_name = enemy.card.name.clone();
+
+        let investigator = self
+            .investigator_mut(investigator_id)
+            .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+        investigator.engaged_enemies.push(enemy_instance_id);
+
+        let enemy = self
+            .enemies_in_play
+            .iter_mut()
+            .find(|e| e.id == enemy_instance_id)
+            .unwrap();
+        enemy.engaged_with = Some(investigator_id);
+
+        let message = format!("{investigator_name} engages {enemy_name}");
+        self.log(message);
+
+        Ok(EngageResult {
+            investigator_id,
+            enemy_instance_id,
+            enemy_name,
+        })
+    }
+
+    /// Resolve a fight action: the investigator makes a combat test against the
+    /// enemy's fight value. On success, deal damage to the enemy. On failure,
+    /// the enemy deals its damage to the investigator.
+    pub fn fight(
+        &mut self,
+        investigator_id: Uuid,
+        enemy_instance_id: Uuid,
+    ) -> Result<FightResult> {
+        let investigator = self
+            .investigator(investigator_id)
+            .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+        if !investigator.engaged_enemies.contains(&enemy_instance_id) {
+            return Err(GameError::RuleViolation("not engaged with this enemy".into()));
+        }
+        let investigator_name = investigator.name.clone();
+
+        let enemy_index = self
+            .enemies_in_play
+            .iter()
+            .position(|e| e.id == enemy_instance_id)
+            .ok_or_else(|| GameError::CardNotFound(enemy_instance_id.to_string()))?;
+        let enemy_fight = enemy_fight_value(&self.enemies_in_play[enemy_index].card);
+        let enemy_name = self.enemies_in_play[enemy_index].card.name.clone();
+        let enemy_damage = enemy_damage_value(&self.enemies_in_play[enemy_index].card);
+
+        // Spend one action to fight.
+        self.spend_action(investigator_id)?;
+
+        // Resolve combat skill test.
+        let test = self.skill_test(investigator_id, SkillIcon::Combat)?;
+        let success = test.total >= enemy_fight;
+
+        let enemy = &mut self.enemies_in_play[enemy_index];
+        let (damage_dealt, damage_taken) = if success {
+            let damage = 1;
+            enemy.health = (enemy.health - damage).max(0);
+            if enemy.health == 0 {
+                let defeated_enemy_name = enemy.card.name.clone();
+                self.enemies_in_play.remove(enemy_index);
+                for inv in &mut self.investigators {
+                    inv.engaged_enemies.retain(|id| *id != enemy_instance_id);
+                }
+                let message = format!("{investigator_name} defeated {defeated_enemy_name}");
+                self.log(message);
+                (damage, 0)
+            } else {
+                let message = format!(
+                    "{investigator_name} hits {enemy_name} for {damage} damage"
+                );
+                self.log(message);
+                (damage, 0)
+            }
+        } else {
+            let investigator = self
+                .investigator_mut(investigator_id)
+                .ok_or_else(|| GameError::InvestigatorNotFound(investigator_id.to_string()))?;
+            investigator.take_damage(enemy_damage);
+            let message = format!(
+                "{investigator_name} misses {enemy_name}; {enemy_name} hits {investigator_name} for {enemy_damage} damage"
+            );
+            self.log(message);
+            (0, enemy_damage)
+        };
+
+        let enemy_health = self
+            .enemies_in_play
+            .iter()
+            .find(|e| e.id == enemy_instance_id)
+            .map(|e| e.health)
+            .unwrap_or(0);
+
+        Ok(FightResult {
+            investigator_id,
+            enemy_instance_id,
+            success,
+            enemy_health,
+            damage_dealt: damage_dealt,
+            damage_taken,
+            skill_test: test,
+        })
     }
 
     /// Play a card from an investigator's hand into their play area, deducting
@@ -280,6 +420,32 @@ pub struct PlayCardResult {
     pub remaining_resources: i32,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EnemyInstance {
+    pub id: Uuid,
+    pub card: Card,
+    pub health: i32,
+    pub engaged_with: Option<Uuid>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EngageResult {
+    pub investigator_id: Uuid,
+    pub enemy_instance_id: Uuid,
+    pub enemy_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FightResult {
+    pub investigator_id: Uuid,
+    pub enemy_instance_id: Uuid,
+    pub success: bool,
+    pub enemy_health: i32,
+    pub damage_dealt: i32,
+    pub damage_taken: i32,
+    pub skill_test: SkillTestResult,
+}
+
 fn skill_as_str(skill: SkillIcon) -> &'static str {
     match skill {
         SkillIcon::Willpower => "Willpower",
@@ -288,4 +454,28 @@ fn skill_as_str(skill: SkillIcon) -> &'static str {
         SkillIcon::Agility => "Agility",
         SkillIcon::Wild => "Wild",
     }
+}
+
+/// Extract an enemy's health from its raw ArkhamDB data. Defaults to 1.
+fn enemy_health(card: &Card) -> i32 {
+    card.raw
+        .get("health")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(1) as i32
+}
+
+/// Extract an enemy's fight value from its raw ArkhamDB data. Defaults to 1.
+fn enemy_fight_value(card: &Card) -> i8 {
+    card.raw
+        .get("enemy_fight")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(1) as i8
+}
+
+/// Extract an enemy's damage value from its raw ArkhamDB data. Defaults to 1.
+fn enemy_damage_value(card: &Card) -> i32 {
+    card.raw
+        .get("enemy_damage")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(1) as i32
 }

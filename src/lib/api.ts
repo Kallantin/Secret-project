@@ -1,6 +1,15 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { CardTemplate } from "../data/cards";
-import type { ChaosToken, GameState, Investigator, MythosResult, PlayCardResult, SkillTestResult } from "../types";
+import type {
+  ChaosToken,
+  EngageResult,
+  FightResult,
+  GameState,
+  Investigator,
+  MythosResult,
+  PlayCardResult,
+  SkillTestResult,
+} from "../types";
 
 export function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -82,6 +91,26 @@ export async function playCard(investigatorId: string, cardId: string): Promise<
   return invoke<PlayCardResult>("play_card", {
     investigator_id: investigatorId,
     card_id: cardId,
+  });
+}
+
+export async function engage(
+  investigatorId: string,
+  enemyInstanceId: string,
+): Promise<EngageResult> {
+  return invoke<EngageResult>("engage", {
+    investigator_id: investigatorId,
+    enemy_instance_id: enemyInstanceId,
+  });
+}
+
+export async function fight(
+  investigatorId: string,
+  enemyInstanceId: string,
+): Promise<FightResult> {
+  return invoke<FightResult>("fight", {
+    investigator_id: investigatorId,
+    enemy_instance_id: enemyInstanceId,
   });
 }
 

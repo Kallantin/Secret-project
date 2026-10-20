@@ -3,6 +3,8 @@ import type { CardTemplate } from "../data/cards";
 import type {
   ChaosToken,
   DeckSlot,
+  EngageResult,
+  FightResult,
   GameState,
   MythosResult,
   SkillTestResult,
@@ -11,6 +13,8 @@ import {
   addInvestigator as apiAddInvestigator,
   advancePhase as apiAdvancePhase,
   drawChaosToken as apiDrawChaosToken,
+  engage as apiEngage,
+  fight as apiFight,
   getGameState,
   isTauri,
   loadGame as apiLoadGame,
@@ -79,6 +83,10 @@ interface GameStore {
   performMythosPhase: () => Promise<void>;
   playInvestigatorCard: (investigatorId: string, cardId: string) => Promise<void>;
   lastMythosResult: MythosResult | null;
+  engageEnemy: (investigatorId: string, enemyInstanceId: string) => Promise<void>;
+  fightEnemy: (investigatorId: string, enemyInstanceId: string) => Promise<void>;
+  lastEngageResult: EngageResult | null;
+  lastFightResult: FightResult | null;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -91,6 +99,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   deckBuilderCards: [],
   lastSkillTest: null,
   lastMythosResult: null,
+  lastEngageResult: null,
+  lastFightResult: null,
 
   init: async () => {
     if (!get().inTauri) {
@@ -299,6 +309,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ busy: true, error: null });
     try {
       await apiPlayCard(investigatorId, cardId);
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  engageEnemy: async (investigatorId, enemyInstanceId) => {
+    set({ busy: true, error: null });
+    try {
+      const result = await apiEngage(investigatorId, enemyInstanceId);
+      set({ lastEngageResult: result, busy: false });
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error), busy: false });
+    }
+  },
+
+  fightEnemy: async (investigatorId, enemyInstanceId) => {
+    set({ busy: true, error: null });
+    try {
+      const result = await apiFight(investigatorId, enemyInstanceId);
+      set({ lastFightResult: result, busy: false });
       await get().refresh();
     } catch (error) {
       set({ error: message(error) });

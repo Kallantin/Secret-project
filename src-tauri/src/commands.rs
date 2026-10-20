@@ -5,7 +5,9 @@ use tauri::State;
 
 use crate::engine::card::{Card, SkillIcon};
 use crate::engine::chaos::ChaosToken;
-use crate::engine::game_state::{GameState, MythosResult, PlayCardResult, SkillTestResult};
+use crate::engine::game_state::{
+    GameState, EngageResult, FightResult, MythosResult, PlayCardResult, SkillTestResult,
+};
 use crate::engine::investigator::Investigator;
 use crate::error::{GameError, Result};
 use uuid::Uuid;
@@ -145,6 +147,36 @@ pub fn mythos_phase(state: State<'_, AppState>) -> Result<MythosResult> {
     let mut guard = state.lock_game()?;
     let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
     game.mythos_phase()
+}
+
+#[tauri::command]
+pub fn engage(
+    state: State<'_, AppState>,
+    investigator_id: String,
+    enemy_instance_id: String,
+) -> Result<EngageResult> {
+    let investigator_id = Uuid::parse_str(&investigator_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid investigator id: {investigator_id}")))?;
+    let enemy_instance_id = Uuid::parse_str(&enemy_instance_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid enemy instance id: {enemy_instance_id}")))?;
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.engage(investigator_id, enemy_instance_id)
+}
+
+#[tauri::command]
+pub fn fight(
+    state: State<'_, AppState>,
+    investigator_id: String,
+    enemy_instance_id: String,
+) -> Result<FightResult> {
+    let investigator_id = Uuid::parse_str(&investigator_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid investigator id: {investigator_id}")))?;
+    let enemy_instance_id = Uuid::parse_str(&enemy_instance_id)
+        .map_err(|_| GameError::RuleViolation(format!("invalid enemy instance id: {enemy_instance_id}")))?;
+    let mut guard = state.lock_game()?;
+    let game = guard.as_mut().ok_or(GameError::GameNotInitialized)?;
+    game.fight(investigator_id, enemy_instance_id)
 }
 
 #[tauri::command]

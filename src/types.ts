@@ -39,6 +39,29 @@ export interface PlayCardResult {
   remaining_resources: number;
 }
 
+export interface EnemyInstance {
+  id: string;
+  card: Card;
+  health: number;
+  engaged_with: string | null;
+}
+
+export interface EngageResult {
+  investigator_id: string;
+  enemy_instance_id: string;
+  enemy_name: string;
+}
+
+export interface FightResult {
+  investigator_id: string;
+  enemy_instance_id: string;
+  success: boolean;
+  enemy_health: number;
+  damage_dealt: number;
+  damage_taken: number;
+  skill_test: SkillTestResult;
+}
+
 export interface SkillIcons {
   willpower: number;
   intellect: number;
@@ -58,6 +81,7 @@ export interface Card {
   icons: SkillIcons;
   traits: string[];
   text: string;
+  raw: Record<string, unknown>;
 }
 
 export interface DeckSlot {
@@ -90,6 +114,8 @@ export interface Investigator {
   actions_remaining: number;
   clues: number;
   is_defeated: boolean;
+  /// Enemy instance IDs currently engaged with this investigator.
+  engaged_enemies: string[];
   deck: Deck;
 }
 
@@ -104,6 +130,6 @@ export interface GameState {
   chaos_bag: ChaosBag;
   encounter_deck: Card[];
   encounter_discard: Card[];
-  enemies_in_play: Card[];
+  enemies_in_play: EnemyInstance[];
   log: string[];
 }
