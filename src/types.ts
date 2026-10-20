@@ -38,12 +38,18 @@ export interface Card {
   text: string;
 }
 
+export interface DeckSlot {
+  code: string;
+  quantity: number;
+}
+
 export interface Deck {
   draw_pile: unknown[];
   hand: unknown[];
   discard_pile: unknown[];
   play_area: unknown[];
   removed_from_game: unknown[];
+  decklist: DeckSlot[];
 }
 
 export interface Investigator {

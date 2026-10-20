@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ChaosToken, GameState } from "../types";
+import type { ChaosToken, DeckSlot, GameState } from "../types";
 import {
   addInvestigator as apiAddInvestigator,
   advancePhase as apiAdvancePhase,
@@ -38,6 +38,8 @@ interface GameStore {
   busy: boolean;
   error: string | null;
   inTauri: boolean;
+  deckBuilderInvestigator: string | null;
+  deckBuilderCards: DeckSlot[];
   init: () => Promise<void>;
   refresh: () => Promise<void>;
   startNewGame: (
@@ -51,6 +53,12 @@ interface GameStore {
   drawToken: () => Promise<void>;
   persist: (path: string) => Promise<void>;
   restore: (path: string) => Promise<void>;
+  setDeckBuilderInvestigator: (code: string | null) => Promise<void>;
+  addDeckCard: (code: string) => Promise<void>;
+  removeDeckCard: (code: string) => Promise<void>;
+  setDeckCardQuantity: (code: string, quantity: number) => Promise<void>;
+  clearDeckBuilder: () => Promise<void>;
+  saveDeckToInvestigator: () => Promise<void>;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -59,6 +67,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   busy: false,
   error: null,
   inTauri: isTauri(),
+  deckBuilderInvestigator: null,
+  deckBuilderCards: [],
 
   init: async () => {
     if (!get().inTauri) {
@@ -148,6 +158,67 @@ export const useGameStore = create<GameStore>((set, get) => ({
     try {
       const game = await apiLoadGame(path);
       set({ game, lastToken: null });
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  setDeckBuilderInvestigator: async (code) => {
+    set({ deckBuilderInvestigator: code, deckBuilderCards: [] });
+  },
+
+  addDeckCard: async (code) => {
+    const { deckBuilderCards } = get();
+    const existing = deckBuilderCards.find((slot) => slot.code === code);
+    if (existing && existing.quantity >= 2) return;
+    set({
+      deckBuilderCards: existing
+        ? deckBuilderCards.map((slot) =>
+            slot.code === code ? { ...slot, quantity: slot.quantity + 1 } : slot
+          )
+        : [...deckBuilderCards, { code, quantity: 1 }],
+    });
+  },
+
+  removeDeckCard: async (code) => {
+    set({
+      deckBuilderCards: get().deckBuilderCards
+        .map((slot) =>
+          slot.code === code ? { ...slot, quantity: Math.max(0, slot.quantity - 1) } : slot
+        )
+        .filter((slot) => slot.quantity > 0),
+    });
+  },
+
+  setDeckCardQuantity: async (code, quantity) => {
+    const clamped = Math.min(2, Math.max(0, quantity));
+    set({
+      deckBuilderCards: get().deckBuilderCards
+        .map((slot) => (slot.code === code ? { ...slot, quantity: clamped } : slot))
+        .filter((slot) => slot.quantity > 0),
+    });
+  },
+
+  clearDeckBuilder: async () => {
+    set({ deckBuilderInvestigator: null, deckBuilderCards: [] });
+  },
+
+  saveDeckToInvestigator: async () => {
+    const { game, deckBuilderInvestigator, deckBuilderCards } = get();
+    if (!game || !deckBuilderInvestigator) return;
+    set({ busy: true, error: null });
+    try {
+      const updated = {
+        ...game,
+        investigators: game.investigators.map((inv) =>
+          inv.code === deckBuilderInvestigator
+            ? { ...inv, deck: { ...inv.deck, decklist: [...deckBuilderCards] } }
+            : inv
+        ),
+      };
+      set({ game: updated });
     } catch (error) {
       set({ error: message(error) });
     } finally {

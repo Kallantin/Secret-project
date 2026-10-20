@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import CardLibrary from "./components/CardLibrary";
 import ChaosBagPanel from "./components/ChaosBagPanel";
 import ControlBar from "./components/ControlBar";
+import DeckBuilder from "./components/DeckBuilder";
 import GameLog from "./components/GameLog";
 import InvestigatorCard from "./components/InvestigatorCard";
 import InvestigatorPicker from "./components/InvestigatorPicker";
@@ -78,6 +79,7 @@ export default function App() {
         <aside className="flex flex-col gap-4 overflow-auto">
           <ChaosBagPanel />
           <CardLibrary />
+          <DeckBuilder />
         </aside>
       </main>
 
