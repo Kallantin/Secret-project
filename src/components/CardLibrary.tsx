@@ -14,8 +14,16 @@ const SKILLS: readonly [keyof CardTemplate["icons"], string][] = [
   ["wild", "*"],
 ];
 
+const EXPANSIONS: { code: string; name: string }[] = [
+  { code: "core", name: "Core Set" },
+];
+
+// Taboo list: card codes that are banned from deckbuilding
+const TABOO_LIST: string[] = [];
+
 export default function CardLibrary() {
   const [query, setQuery] = useState("");
+  const [expansionFilter, setExpansionFilter] = useState<string | null>(null);
   const deckBuilderInvestigator = useGameStore(
     (state) => state.deckBuilderInvestigator,
   );
@@ -48,6 +56,13 @@ export default function CardLibrary() {
         const allowed = card.class === "neutral" || card.class === investigator.class;
         if (!allowed) continue;
       }
+      // Expansion filter
+      if (expansionFilter) {
+        const packCode = card.raw.pack_code;
+        if (packCode !== expansionFilter) continue;
+      }
+      // Taboo filter
+      if (TABOO_LIST.includes(card.code)) continue;
       const matches =
         card.name.toLowerCase().includes(q) ||
         card.card_type.toLowerCase().includes(q) ||
@@ -60,7 +75,7 @@ export default function CardLibrary() {
       map.set(card.card_type, bucket);
     }
     return [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
-  }, [query, investigator]);
+  }, [query, investigator, expansionFilter]);
 
   return (
     <section className="flex flex-col gap-4">
@@ -76,6 +91,21 @@ export default function CardLibrary() {
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
+      <div className="flex gap-2 mt-2">
+        <label className="text-xs text-gray-400 uppercase tracking-wide">Expansion</label>
+        <select
+          className="rounded bg-arkham-panel border border-arkham-border px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-arkham-accent"
+          value={expansionFilter ?? ""}
+          onChange={(e) => setExpansionFilter(e.target.value || null)}
+        >
+          <option value="">All</option>
+          {EXPANSIONS.map((exp) => (
+            <option key={exp.code} value={exp.code}>
+              {exp.name}
+            </option>
+          ))}
+        </select>
+      </div>
       {deckBuilderInvestigator && !investigator ? (
         <p className="text-sm text-gray-400">Unknown investigator.</p>
       ) : groups.length === 0 ? (
@@ -90,8 +120,9 @@ export default function CardLibrary() {
               <ul className="space-y-2">
                 {cards.map((card) => {
                   const qty = deckQuantity.get(card.code) ?? 0;
+                  const isTaboo = TABOO_LIST.includes(card.code);
                   return (
-                    <li key={card.code} className="rounded bg-black/20 p-2">
+                    <li key={card.code} className={`rounded p-2 ${isTaboo ? "bg-red-900/20 border border-red-900/50" : "bg-black/20"}`}>
                       <details className="group">
                         <summary className="flex items-center gap-2 text-sm font-semibold list-none cursor-pointer select-none">
                           {card.name}
@@ -101,7 +132,7 @@ export default function CardLibrary() {
                                 <button
                                   type="button"
                                   onClick={() => void removeDeckCard(card.code)}
-                                  disabled={qty <= 0 || !deckBuilderInvestigator}
+                                  disabled={qty <= 0 || !deckBuilderInvestigator || isTaboo}
                                   className="rounded border border-arkham-border px-1 py-0 text-[10px] text-gray-400 disabled:opacity-40 hover:bg-black/20"
                                 >
                                   −
@@ -112,7 +143,7 @@ export default function CardLibrary() {
                                 <button
                                   type="button"
                                   onClick={() => void addDeckCard(card.code)}
-                                  disabled={qty >= 2 || !deckBuilderInvestigator}
+                                  disabled={qty >= 2 || !deckBuilderInvestigator || isTaboo}
                                   className="rounded border border-arkham-border px-1 py-0 text-[10px] text-gray-400 disabled:opacity-40 hover:bg-black/20"
                                 >
                                   +
@@ -126,6 +157,7 @@ export default function CardLibrary() {
                             {card.class}
                             {card.cost == null ? "" : ` · cost ${card.cost}`}
                             {card.xp > 0 ? ` · xp ${card.xp}` : ""}
+                            {isTaboo && " · taboo"}
                           </span>
                         </summary>
                         <div className="mt-2 space-y-2 text-sm">

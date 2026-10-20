@@ -423,8 +423,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
-  applyGameState: (gameState: GameState) => {
-    set({ game: gameState });
+  applyGameState: (gameState: unknown) => {
+    set({ game: gameState as GameState });
   },
 
   broadcastGameState: async () => {
