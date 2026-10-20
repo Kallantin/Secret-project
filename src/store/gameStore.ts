@@ -13,6 +13,7 @@ import type {
   PlaceDoomResult,
   SkillTestResult,
 } from "../types";
+import { useMultiplayerStore } from "./multiplayerStore";
 import {
   addInvestigator as apiAddInvestigator,
   advanceAct as apiAdvanceAct,
@@ -154,6 +155,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         }
         await get().refresh();
       }
+      useMultiplayerStore.getState().broadcastAction('new_game', {
+        campaign: campaign ?? "Night of the Zealot",
+        scenario: scenario ?? "The Gathering",
+        seed,
+      });
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -166,6 +172,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     try {
       await apiAddInvestigator(investigator);
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('add_investigator', {
+        code: investigator.code,
+        name: investigator.name,
+        willpower: investigator.willpower,
+        intellect: investigator.intellect,
+        combat: investigator.combat,
+        agility: investigator.agility,
+        max_health: investigator.max_health,
+        max_sanity: investigator.max_sanity,
+      });
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -178,6 +194,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     try {
       await apiAdvancePhase();
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('advance_phase', {});
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -191,6 +208,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const token = await apiDrawChaosToken();
       set({ lastToken: token });
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('draw_chaos_token', {});
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -288,6 +306,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const result = await apiSkillTest(investigatorId, skill);
       set({ lastSkillTest: result, busy: false });
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('skill_test', {
+        investigatorId,
+        skill,
+      });
     } catch (error) {
       set({ error: message(error), busy: false });
     }
@@ -298,6 +320,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     try {
       await apiSpendAction(investigatorId);
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('spend_action', {
+        investigatorId,
+      });
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -310,6 +335,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     try {
       await apiResetTurn();
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('reset_turn', {});
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -323,6 +349,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const result = await apiMythosPhase();
       set({ lastMythosResult: result, busy: false });
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('mythos_phase', {});
     } catch (error) {
       set({ error: message(error), busy: false });
     }
@@ -333,6 +360,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     try {
       await apiPlayCard(investigatorId, cardId);
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('play_card', {
+        investigatorId,
+        cardId,
+      });
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -346,8 +377,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const result = await apiEngage(investigatorId, enemyInstanceId);
       set({ lastEngageResult: result, busy: false });
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('engage', {
+        investigatorId,
+        enemyInstanceId,
+      });
     } catch (error) {
-      set({ error: message(error), busy: false });
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
     }
   },
 
@@ -357,6 +394,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const result = await apiFight(investigatorId, enemyInstanceId);
       set({ lastFightResult: result, busy: false });
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('fight', {
+        investigatorId,
+        enemyInstanceId,
+      });
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -370,6 +411,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const result = await apiMoveToLocation(investigatorId, locationInstanceId);
       set({ lastMoveResult: result, busy: false });
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('move_to_location', {
+        investigatorId,
+        locationInstanceId,
+      });
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -383,6 +428,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const result = await apiInvestigate(investigatorId);
       set({ lastInvestigateResult: result, busy: false });
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('investigate', {
+        investigatorId,
+      });
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -396,6 +444,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const result = await apiPlaceDoom(amount);
       set({ lastPlaceDoomResult: result, busy: false });
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('place_doom', { amount });
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -409,6 +458,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const result = await apiAdvanceAct(investigatorId, cluesSpent);
       set({ lastAdvanceActResult: result, busy: false });
       await get().refresh();
+      useMultiplayerStore.getState().broadcastAction('advance_act', {
+        investigatorId,
+        cluesSpent,
+      });
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -416,3 +469,89 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 }));
+
+useMultiplayerStore.getState().setRemoteActionHandler((action) => {
+  const state = useGameStore.getState();
+  if (!state.game) return;
+
+  switch (action.type) {
+    case 'skill_test': {
+      const { investigatorId, skill } = action.payload as {
+        investigatorId: string;
+        skill: string;
+      };
+      void state.performSkillTest(investigatorId, skill);
+      break;
+    }
+    case 'spend_action': {
+      const { investigatorId } = action.payload as {
+        investigatorId: string;
+      };
+      void state.spendInvestigatorAction(investigatorId);
+      break;
+    }
+    case 'play_card': {
+      const { investigatorId, cardId } = action.payload as {
+        investigatorId: string;
+        cardId: string;
+      };
+      void state.playInvestigatorCard(investigatorId, cardId);
+      break;
+    }
+    case 'place_doom': {
+      const { amount } = action.payload as { amount: number };
+      void state.placeDoom(amount);
+      break;
+    }
+    case 'advance_act': {
+      const { investigatorId, cluesSpent } = action.payload as {
+        investigatorId: string;
+        cluesSpent: number;
+      };
+      void state.advanceAct(investigatorId, cluesSpent);
+      break;
+    }
+    case 'move_to_location': {
+      const { investigatorId, locationInstanceId } = action.payload as {
+        investigatorId: string;
+        locationInstanceId: string;
+      };
+      void state.moveToLocation(investigatorId, locationInstanceId);
+      break;
+    }
+    case 'investigate': {
+      const { investigatorId } = action.payload as {
+        investigatorId: string;
+      };
+      void state.investigate(investigatorId);
+      break;
+    }
+    case 'engage': {
+      const { investigatorId, enemyInstanceId } = action.payload as {
+        investigatorId: string;
+        enemyInstanceId: string;
+      };
+      void state.engageEnemy(investigatorId, enemyInstanceId);
+      break;
+    }
+    case 'fight': {
+      const { investigatorId, enemyInstanceId } = action.payload as {
+        investigatorId: string;
+        enemyInstanceId: string;
+      };
+      void state.fightEnemy(investigatorId, enemyInstanceId);
+      break;
+    }
+    case 'advance_phase':
+      void state.nextPhase();
+      break;
+    case 'reset_turn':
+      void state.resetInvestigatorTurn();
+      break;
+    case 'draw_chaos_token':
+      void state.drawToken();
+      break;
+    default:
+      break;
+  }
+});
