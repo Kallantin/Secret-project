@@ -1,0 +1,11 @@
+{
+  "code": "02004",
+  "name": "\"Ashcan\" Pete",
+  "class": "survivor",
+  "willpower": 2,
+  "intellect": 1,
+  "combat": 1,
+  "agility": 3,
+  "max_health": 8,
+  "max_sanity": 5
+}

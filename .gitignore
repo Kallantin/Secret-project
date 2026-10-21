@@ -13,6 +13,7 @@ out/
 /data/raw/
 /public/cards/
 /public/atlas/
+/resources/
 
 # Environment
 .env

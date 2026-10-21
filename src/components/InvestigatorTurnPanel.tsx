@@ -177,7 +177,7 @@ export default function InvestigatorTurnPanel() {
         </p>
         <button
           type="button"
-          onClick={() => void advanceAct(investigator.id, 1)}
+          onClick={() => void advanceAct([{ investigatorId: investigator.id, cluesSpent: 1 }])}
           disabled={
             busy ||
             !investigator ||

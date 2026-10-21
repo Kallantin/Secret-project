@@ -2,6 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 import type { CardTemplate } from "../data/cards";
 import type {
   AdvanceActResult,
+  CampaignProgress,
+  Card,
   ChaosToken,
   EngageResult,
   FightResult,
@@ -26,6 +28,7 @@ export async function newGame(
   seed?: number | null,
   encounterCards: CardTemplate[] = [],
   scenarioData?: ScenarioData,
+  campaignProgress?: CampaignProgress | null,
 ): Promise<GameState> {
   return invoke<GameState>("new_game", {
     campaign,
@@ -33,6 +36,29 @@ export async function newGame(
     seed: seed ?? null,
     encounter_cards: encounterCards,
     scenario_data: scenarioData,
+    campaign_progress: campaignProgress ?? null,
+  });
+}
+
+export async function startNextScenario(
+  scenario: string,
+  seed?: number | null,
+  scenarioData?: ScenarioData,
+): Promise<GameState> {
+  return invoke<GameState>("start_next_scenario", {
+    scenario,
+    seed: seed ?? null,
+    scenario_data: scenarioData,
+  });
+}
+
+export async function addCampaignLogEntry(
+  result: string,
+  notes: string,
+): Promise<GameState> {
+  return invoke<GameState>("add_campaign_log_entry", {
+    result,
+    notes,
   });
 }
 
@@ -142,12 +168,13 @@ export async function placeDoom(amount: number): Promise<PlaceDoomResult> {
 }
 
 export async function advanceAct(
-  investigatorId: string,
-  cluesSpent: number,
+  contributions: Array<{ investigatorId: string; cluesSpent: number }>,
 ): Promise<AdvanceActResult> {
   return invoke<AdvanceActResult>("advance_act", {
-    investigator_id: investigatorId,
-    clues_spent: cluesSpent,
+    contributions: contributions.map((c) => ({
+      investigator_id: c.investigatorId,
+      clues_spent: c.cluesSpent,
+    })),
   });
 }
 
@@ -157,4 +184,94 @@ export async function saveGame(path: string): Promise<void> {
 
 export async function loadGame(path: string): Promise<GameState> {
   return invoke<GameState>("load_game", { path });
+}
+
+export async function discardCard(
+  investigatorId: string,
+  cardId: string,
+): Promise<Card> {
+  return invoke<Card>("discard_card", {
+    investigator_id: investigatorId,
+    card_id: cardId,
+  });
+}
+
+export async function drawCard(investigatorId: string): Promise<Card> {
+  return invoke<Card>("draw_card", {
+    investigator_id: investigatorId,
+  });
+}
+
+export async function addCardToPlayArea(
+  investigatorId: string,
+  card: Card,
+): Promise<void> {
+  return invoke<void>("add_card_to_play_area", {
+    investigator_id: investigatorId,
+    card,
+  });
+}
+
+export async function gainResource(
+  investigatorId: string,
+  amount: number,
+): Promise<number> {
+  return invoke<number>("gain_resource", {
+    investigator_id: investigatorId,
+    amount,
+  });
+}
+
+export async function spendResources(
+  investigatorId: string,
+  amount: number,
+): Promise<void> {
+  return invoke<void>("spend_resources_cmd", {
+    investigator_id: investigatorId,
+    amount,
+  });
+}
+
+export async function healDamage(
+  investigatorId: string,
+  amount: number,
+): Promise<number> {
+  return invoke<number>("heal_damage_cmd", {
+    investigator_id: investigatorId,
+    amount,
+  });
+}
+
+export async function healHorror(
+  investigatorId: string,
+  amount: number,
+): Promise<number> {
+  return invoke<number>("heal_horror_cmd", {
+    investigator_id: investigatorId,
+    amount,
+  });
+}
+
+export async function takeDamage(
+  investigatorId: string,
+  amount: number,
+): Promise<number> {
+  return invoke<number>("take_damage_cmd", {
+    investigator_id: investigatorId,
+    amount,
+  });
+}
+
+export async function takeHorror(
+  investigatorId: string,
+  amount: number,
+): Promise<number> {
+  return invoke<number>("take_horror_cmd", {
+    investigator_id: investigatorId,
+    amount,
+  });
+}
+
+export async function nextInvestigator(): Promise<string> {
+  return invoke<string>("next_investigator", {});
 }

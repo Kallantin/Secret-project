@@ -56,9 +56,9 @@ engine/
 ├── mod.rs           module wiring + public re-exports
 ├── card.rs          Card, CardId, CardType, CardClass, SkillIcons
 ├── chaos.rs         ChaosToken, ChaosBag (deterministic seeded draws)
-├── investigator.rs  Investigator, Deck
+├── investigator.rs  Investigator, Deck, DeckSlot
 ├── phase.rs         Phase enum + transitions
-└── game_state.rs    GameState — rounds, phases, log, encounter deck
+└── game_state.rs    GameState — rounds, phases, log, encounter deck, campaign progress
 ```
 
 Key properties:
@@ -67,9 +67,39 @@ Key properties:
   game is reproducible from its seed.
 - **Errors**: a single `GameError` enum with a serializable representation crosses the IPC
   boundary.
-- **Commands**: `new_game`, `get_game_state`, `advance_phase`, `draw_chaos_token`, `save_game`,
-  and `load_game` are registered in `src-tauri/src/lib.rs` and backed by `AppState`
-  (`Mutex<Option<GameState>>`).
+- **Commands**: registered in `src-tauri/src/lib.rs` and backed by `AppState`
+  (`Mutex<Option<GameState>>`). Includes `new_game`, `get_game_state`, `advance_phase`,
+  `draw_chaos_token`, `next_investigator`, `move_to_location`, `investigate`, `fight`,
+  `engage`, `play_card`, `discard_card`, `draw_card`, `add_card_to_play_area`,
+  `gain_resource`, `spend_resources`, `heal_damage`, `heal_horror`, `take_damage`,
+  `take_horror`, `place_doom`, `advance_act`, `save_game`, `load_game`,
+  `add_campaign_log_entry`, `start_next_scenario`, and `open_pdf`.
+
+### Campaign progression
+
+The engine models campaign-wide state through `CampaignProgress` (`completed_scenarios`,
+`campaign_log`, `boons_and_blemishes`) carried on `GameState`. Investigators track
+`physical_trauma`, `mental_trauma`, `xp`, `is_killed`, and `is_driven_insane` across
+scenarios. `start_scenario_in_campaign` carries XP, decklist, and trauma forward while
+resetting scenario-specific state; resources reset to 5 and trauma damage/horror are applied
+at setup (per the Rules Reference, page 5).
+
+## Data and saves
+
+- **Cards**: ArkhamDB-compatible JSON in `data/cards/`, validated by the `validate-data` script.
+- **Investigators**: `data/investigators/` — 9 investigators across core + Dunwich Legacy.
+- **Scenarios**: `data/scenarios/` — 7 scenarios across 2 campaigns (*Night of the Zealot*,
+  *The Dunwich Legacy*).
+- **Tokens**: `data/tokens/` — chaos bag and game token definitions.
+- **Saves**: local files written by the Rust engine via `save_game`/`load_game`, with an
+  optional encrypted cloud sync path.
+
+## Testing
+
+- Rust E2E test suite: `src-tauri/tests/e2e_game_flow.rs` — 20 tests covering full scenario
+  playthroughs for all 7 scenarios, campaign progression carryover, win/loss conditions,
+  clue pooling, and chaos bag determinism.
+- Run with: `cargo test --test e2e_game_flow` (in `src-tauri/`).
 
 ## Multiplayer server
 
@@ -93,11 +123,6 @@ server relays actions; rules remain in the engine.
 3. `scripts/src/validate-data.ts` validates the committed ArkhamDB card JSON in `data/`.
 
 Assets are never committed; `data/` JSON is committed and treated as source of truth.
-
-## Data and saves
-
-- **Cards**: ArkhamDB-compatible JSON in `data/`, validated by the `validate-data` script.
-- **Saves**: local files written by the Rust engine, with an optional encrypted cloud sync path.
 
 ## Taboo list
 

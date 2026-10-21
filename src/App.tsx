@@ -12,6 +12,7 @@ import CombatPanel from "./components/CombatPanel";
 import LocationPanel from "./components/LocationPanel";
 import AgendaPanel from "./components/AgendaPanel";
 import RoomLobby from "./components/RoomLobby";
+import RulebookViewer from "./components/RulebookViewer";
 import { type InvestigatorTemplate } from "./data/investigators";
 import { ENCOUNTER_CARDS } from "./data/cards";
 import { SCENARIOS } from "./data/scenarios";
@@ -25,6 +26,7 @@ export default function App() {
   const init = useGameStore((state) => state.init);
   const startNewGame = useGameStore((state) => state.startNewGame);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [rulebookOpen, setRulebookOpen] = useState(false);
 
   useEffect(() => {
     void init();
@@ -74,6 +76,14 @@ export default function App() {
         </div>
       )}
 
+      <button
+        type="button"
+        onClick={() => setRulebookOpen(true)}
+        className="px-4 py-2 rounded border border-arkham-border bg-black/40 text-sm text-arkham-accent hover:bg-black/60"
+      >
+        Rulebook &amp; Reference
+      </button>
+
       <main className="grid flex-1 grid-cols-[1fr_20rem] gap-4 overflow-hidden p-4">
         <section className="flex flex-col gap-4 overflow-auto">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -89,7 +99,7 @@ export default function App() {
               </p>
             ) : null}
           </div>
-          <GameLog entries={game?.log ?? []} />
+          <GameLog entries={game?.log_messages ?? []} />
         </section>
 
         <aside className="flex flex-col gap-4 overflow-auto">
@@ -109,6 +119,11 @@ export default function App() {
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         onConfirm={handlePickerConfirm}
+      />
+
+      <RulebookViewer
+        open={rulebookOpen}
+        onOpenChange={setRulebookOpen}
       />
     </div>
   );

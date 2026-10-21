@@ -1,0 +1,142 @@
+[
+  {
+    "code": "ct-numeric-4",
+    "name": "Chaos Token -4",
+    "token_type": "chaos",
+    "kind": "numeric",
+    "value": -4,
+    "modifier": -4,
+    "is_symbol": false,
+    "image": null
+  },
+  {
+    "code": "ct-numeric-3",
+    "name": "Chaos Token -3",
+    "token_type": "chaos",
+    "kind": "numeric",
+    "value": -3,
+    "modifier": -3,
+    "is_symbol": false,
+    "image": null
+  },
+  {
+    "code": "ct-numeric-2",
+    "name": "Chaos Token -2",
+    "token_type": "chaos",
+    "kind": "numeric",
+    "value": -2,
+    "modifier": -2,
+    "is_symbol": false,
+    "image": null
+  },
+  {
+    "code": "ct-numeric-1",
+    "name": "Chaos Token -1",
+    "token_type": "chaos",
+    "kind": "numeric",
+    "value": -1,
+    "modifier": -1,
+    "is_symbol": false,
+    "image": null
+  },
+  {
+    "code": "ct-numeric-0",
+    "name": "Chaos Token 0",
+    "token_type": "chaos",
+    "kind": "numeric",
+    "value": 0,
+    "modifier": 0,
+    "is_symbol": false,
+    "image": null
+  },
+  {
+    "code": "ct-numeric-1p",
+    "name": "Chaos Token +1",
+    "token_type": "chaos",
+    "kind": "numeric",
+    "value": 1,
+    "modifier": 1,
+    "is_symbol": false,
+    "image": null
+  },
+  {
+    "code": "ct-skull",
+    "name": "Chaos Token Skull",
+    "token_type": "chaos",
+    "kind": "skull",
+    "value": 0,
+    "modifier": 0,
+    "is_symbol": true,
+    "image": null
+  },
+  {
+    "code": "ct-cultist",
+    "name": "Chaos Token Cultist",
+    "token_type": "chaos",
+    "kind": "cultist",
+    "value": 0,
+    "modifier": 0,
+    "is_symbol": true,
+    "image": null
+  },
+  {
+    "code": "ct-tablet",
+    "name": "Chaos Token Tablet",
+    "token_type": "chaos",
+    "kind": "tablet",
+    "value": 0,
+    "modifier": 0,
+    "is_symbol": true,
+    "image": null
+  },
+  {
+    "code": "ct-elder-thing",
+    "name": "Chaos Token Elder Thing",
+    "token_type": "chaos",
+    "kind": "elder_thing",
+    "value": 0,
+    "modifier": 0,
+    "is_symbol": true,
+    "image": null
+  },
+  {
+    "code": "ct-auto-fail",
+    "name": "Chaos Token Auto Fail",
+    "token_type": "chaos",
+    "kind": "auto_fail",
+    "value": -100,
+    "modifier": -100,
+    "is_symbol": true,
+    "image": null
+  },
+  {
+    "code": "ct-elder-sign",
+    "name": "Chaos Token Elder Sign",
+    "token_type": "chaos",
+    "kind": "elder_sign",
+    "value": 0,
+    "modifier": 0,
+    "is_symbol": true,
+    "image": null
+  },
+  {
+    "code": "ct-bless",
+    "name": "Chaos Token Bless",
+    "token_type": "chaos",
+    "kind": "bless",
+    "value": 2,
+    "modifier": 2,
+    "is_symbol": false,
+    "image": null
+  },
+  {
+    "code": "ct-curse",
+    "name": "Chaos Token Curse",
+    "token_type": "chaos",
+    "kind": "curse",
+    "value": -2,
+    "modifier": -2,
+    "is_symbol": false,
+    "image": null
+  }
+]

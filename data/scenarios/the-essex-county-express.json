@@ -1,0 +1,131 @@
+{
+  "campaign": "the-dunwich-legacy",
+  "code": "02002",
+  "name": "The Essex County Express",
+  "order": 2,
+  "chaos_bag": "standard",
+  "acts": [
+    {
+      "code": "02002c",
+      "name": "The Essex County Express",
+      "clue_cost": 3,
+      "text": "Investigate the train to discover what happened to the passengers and crew.",
+      "raw": {
+        "code": "02002c",
+        "name": "The Essex County Express",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02002d",
+      "name": "Stop the Train",
+      "clue_cost": 2,
+      "text": "Find a way to stop the train before it reaches its final destination.",
+      "raw": {
+        "code": "02002d",
+        "name": "Stop the Train",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "agendas": [
+    {
+      "code": "02003a",
+      "name": "The Train Rolls On",
+      "doom_threshold": 4,
+      "text": "The train continues its journey through the night, carrying doom with it.",
+      "raw": {
+        "code": "02003a",
+        "name": "The Train Rolls On",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 4,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02003b",
+      "name": "Derailment",
+      "doom_threshold": 4,
+      "text": "The train is racing toward disaster. You must stop it before it's too late.",
+      "raw": {
+        "code": "02003b",
+        "name": "Derailment",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 4,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "locations": [
+    {
+      "code": "02006",
+      "name": "Passenger Car",
+      "clues": 2,
+      "shroud": 1,
+      "text": "A comfortable passenger car with plush seats and large windows.",
+      "raw": {
+        "code": "02006",
+        "name": "Passenger Car",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 1,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02007",
+      "name": "Baggage Car",
+      "clues": 3,
+      "shroud": 2,
+      "text": "Luggage and cargo are piled haphazardly in this car.",
+      "raw": {
+        "code": "02007",
+        "name": "Baggage Car",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 2,
+        "clues": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02008",
+      "name": "Engine Car",
+      "clues": 2,
+      "shroud": 3,
+      "text": "The engine car where the train is controlled.",
+      "raw": {
+        "code": "02008",
+        "name": "Engine Car",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 3,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ]
+}

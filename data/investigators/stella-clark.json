@@ -1,0 +1,11 @@
+{
+  "code": "02003",
+  "name": "Stella Clark",
+  "class": "mystic",
+  "willpower": 3,
+  "intellect": 2,
+  "combat": 1,
+  "agility": 1,
+  "max_health": 6,
+  "max_sanity": 7
+}

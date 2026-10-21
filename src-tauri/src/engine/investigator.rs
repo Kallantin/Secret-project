@@ -11,12 +11,19 @@ pub const DEFAULT_ACTIONS: u8 = 3;
 pub const DEFAULT_RESOURCES: i32 = 5;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct DeckSlot {
+    pub code: String,
+    pub quantity: u32,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Deck {
     pub draw_pile: Vec<Card>,
     pub hand: Vec<Card>,
     pub discard_pile: Vec<Card>,
     pub play_area: Vec<Card>,
     pub removed_from_game: Vec<Card>,
+    pub decklist: Vec<DeckSlot>,
 }
 
 impl Deck {
@@ -81,10 +88,24 @@ pub struct Investigator {
     pub is_defeated: bool,
     /// Experience points earned across campaign play.
     pub xp: i32,
+    /// Permanent physical trauma suffered across the campaign. Each point of
+    /// physical trauma inflicts 1 starting damage in every subsequent scenario.
+    pub physical_trauma: i32,
+    /// Permanent mental trauma suffered across the campaign. Each point of
+    /// mental trauma inflicts 1 starting horror in every subsequent scenario.
+    pub mental_trauma: i32,
+    /// Whether this investigator has been killed (physical trauma >= max_health)
+    /// and cannot be used for the remainder of the campaign.
+    pub is_killed: bool,
+    /// Whether this investigator has been driven insane (mental trauma >= max_sanity)
+    /// and cannot be used for the remainder of the campaign.
+    pub is_driven_insane: bool,
     /// Enemy instance IDs currently engaged with this investigator.
     pub engaged_enemies: Vec<Uuid>,
     /// Location instance ID the investigator is currently at, if any.
     pub location_id: Option<Uuid>,
+    /// Investigator mini token ID used to track this investigator's position on the board.
+    pub investigator_token_id: Option<Uuid>,
     pub deck: Deck,
 }
 
@@ -117,8 +138,13 @@ impl Investigator {
             clues: 0,
             is_defeated: false,
             xp: 0,
+            physical_trauma: 0,
+            mental_trauma: 0,
+            is_killed: false,
+            is_driven_insane: false,
             engaged_enemies: Vec::new(),
             location_id: None,
+            investigator_token_id: None,
             deck: Deck::new(),
         }
     }
@@ -164,16 +190,28 @@ impl Investigator {
     }
 
     pub fn take_damage(&mut self, amount: i32) {
+        let was_defeated = self.health == 0;
         self.health = (self.health - amount).max(0);
-        if self.health == 0 {
+        if !was_defeated && self.health == 0 {
             self.is_defeated = true;
+            // Suffer 1 physical trauma when defeated by damage equal to health.
+            self.physical_trauma += 1;
+            if self.physical_trauma >= self.max_health {
+                self.is_killed = true;
+            }
         }
     }
 
     pub fn take_horror(&mut self, amount: i32) {
+        let was_defeated = self.sanity == 0;
         self.sanity = (self.sanity - amount).max(0);
-        if self.sanity == 0 {
+        if !was_defeated && self.sanity == 0 {
             self.is_defeated = true;
+            // Suffer 1 mental trauma when defeated by horror equal to sanity.
+            self.mental_trauma += 1;
+            if self.mental_trauma >= self.max_sanity {
+                self.is_driven_insane = true;
+            }
         }
     }
 

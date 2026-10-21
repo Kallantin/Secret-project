@@ -1,0 +1,131 @@
+{
+  "campaign": "the-dunwich-legacy",
+  "code": "02003",
+  "name": "Blood on the Altar",
+  "order": 3,
+  "chaos_bag": "standard",
+  "acts": [
+    {
+      "code": "02003c",
+      "name": "Blood on the Altar",
+      "clue_cost": 4,
+      "text": "Investigate the farmhouse to uncover the dark ritual taking place.",
+      "raw": {
+        "code": "02003c",
+        "name": "Blood on the Altar",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 4,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02003d",
+      "name": "Stop the Ritual",
+      "clue_cost": 3,
+      "text": "Interrupt the ritual before it is completed.",
+      "raw": {
+        "code": "02003d",
+        "name": "Stop the Ritual",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "agendas": [
+    {
+      "code": "02004a",
+      "name": "The Ritual Begins",
+      "doom_threshold": 5,
+      "text": "The cultists begin their dark ritual at the altar.",
+      "raw": {
+        "code": "02004a",
+        "name": "The Ritual Begins",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 5,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02004b",
+      "name": "The Ritual Completes",
+      "doom_threshold": 5,
+      "text": "If the ritual is completed, something terrible will be unleashed.",
+      "raw": {
+        "code": "02004b",
+        "name": "The Ritual Completes",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 5,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "locations": [
+    {
+      "code": "02009",
+      "name": "Farmhouse Exterior",
+      "clues": 2,
+      "shroud": 2,
+      "text": "The weathered exterior of an old farmhouse on the outskirts of Dunwich.",
+      "raw": {
+        "code": "02009",
+        "name": "Farmhouse Exterior",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 2,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02010",
+      "name": "Main Room",
+      "clues": 3,
+      "shroud": 3,
+      "text": "The main room of the farmhouse, where strange symbols mark the floor.",
+      "raw": {
+        "code": "02010",
+        "name": "Main Room",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 3,
+        "clues": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02011",
+      "name": "The Altar Room",
+      "clues": 2,
+      "shroud": 4,
+      "text": "A dark chamber where a crude altar stands, stained with blood.",
+      "raw": {
+        "code": "02011",
+        "name": "The Altar Room",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 4,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "code": "gt-doom",
+    "name": "Doom Token",
+    "token_type": "game",
+    "kind": "doom",
+    "value": 1,
+    "image": null
+  },
+  {
+    "code": "gt-clue",
+    "name": "Clue Token",
+    "token_type": "game",
+    "kind": "clue",
+    "value": 1,
+    "image": null
+  },
+  {
+    "code": "gt-resource",
+    "name": "Resource Token",
+    "token_type": "game",
+    "kind": "resource",
+    "value": 1,
+    "image": null
+  },
+  {
+    "code": "gt-damage",
+    "name": "Damage Token",
+    "token_type": "game",
+    "kind": "damage",
+    "value": 1,
+    "image": null
+  },
+  {
+    "code": "gt-horror",
+    "name": "Horror Token",
+    "token_type": "game",
+    "kind": "horror",
+    "value": 1,
+    "image": null
+  },
+  {
+    "code": "it-investigator-1",
+    "name": "Investigator Mini 1",
+    "token_type": "investigator",
+    "kind": "investigator",
+    "value": 1,
+    "image": null
+  },
+  {
+    "code": "it-investigator-2",
+    "name": "Investigator Mini 2",
+    "token_type": "investigator",
+    "kind": "investigator",
+    "value": 2,
+    "image": null
+  },
+  {
+    "code": "it-investigator-3",
+    "name": "Investigator Mini 3",
+    "token_type": "investigator",
+    "kind": "investigator",
+    "value": 3,
+    "image": null
+  },
+  {
+    "code": "it-investigator-4",
+    "name": "Investigator Mini 4",
+    "token_type": "investigator",
+    "kind": "investigator",
+    "value": 4,
+    "image": null
+  }
+]

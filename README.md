@@ -4,14 +4,18 @@ A standalone digital implementation of *Arkham Horror: The Card Game*, built as 
 desktop application. It does not depend on Tabletop Simulator; assets are extracted once from
 an existing TTS workshop mod into a local, gitignored `assets/` directory.
 
-## Features (planned)
+## Features (implemented)
 
-- Core campaign play — *Night of the Zealot* (3 scenarios), 5 investigators
-- Rules-faithful engine with a manual override escape hatch
+- Core campaign play — *Night of the Zealot* (3 scenarios) and *The Dunwich Legacy* (4 scenarios)
+- Rules-faithful engine with campaign progression: XP, trauma, victory display, boons/blemishes, scenario carryover
+- Rules compliance: 1 clue per successful investigate, damage + horror on failed fight, auto-engage, attacks of opportunity
+- 9 investigators (5 core + 4 Dunwich Legacy), expansion player and encounter cards
+- Card effect mechanics: discard, draw, add to play area, gain/spend resources, heal/take damage and horror
+- Investigator turn rotation during Investigation phase
+- Local save/load state
+- Local hotseat, online co-op, and solo with mythos AI automation
 - Configurable taboo list (default: v1.10)
 - Full deckbuilder with ArkhamDB import/export (ArkhamDB-compatible JSON is canonical)
-- Local hotseat, online co-op, and solo with mythos AI automation
-- Local save files with optional encrypted cloud sync
 - Configurable per-player animation intensity
 - Hybrid UI: 2.5D canvas tabletop view plus a compact mode
 
@@ -36,7 +40,10 @@ an existing TTS workshop mod into a local, gitignored `assets/` directory.
 ├── src-tauri/           Rust game engine + Tauri shell
 ├── server/              Dedicated multiplayer WebSocket server
 ├── scripts/             Asset extraction and data validation tooling
-├── data/                Committed ArkhamDB card JSON
+├── data/                Committed ArkhamDB card JSON (investigators, cards, scenarios, tokens)
+├── public/              Static assets (card images, tokens)
+├── resources/           Rulebooks and reference images (from TTS mod)
+├── src-tauri/tests/     E2E test suite
 ├── assets/              Extracted assets (gitignored, generated)
 └── docs/                Architecture and process documentation
 ```
@@ -71,6 +78,7 @@ corepack pnpm tauri:dev      # full desktop app
 | `corepack pnpm typecheck`    | Type-check the frontend                      |
 | `corepack pnpm lint`         | Lint the frontend                            |
 | `corepack pnpm test`         | Run frontend tests                            |
+| `cargo test --test e2e_game_flow` | Run Rust E2E game flow tests (in src-tauri) |
 | `corepack pnpm extract-assets` | Extract assets from the TTS mod            |
 | `corepack pnpm validate-data`  | Validate committed card JSON               |
 
@@ -104,12 +112,19 @@ The relay listens on port `8787` and exposes a health endpoint at `/`.
 Card data lives in `data/` as ArkhamDB-compatible JSON and is committed to the repository.
 Validate it with `corepack pnpm validate-data` (`--strict` to fail on warnings).
 
+### Campaign data
+
+- `data/investigators/` — investigator templates (9 investigators across core + Dunwich Legacy)
+- `data/cards/` — player and encounter card templates
+- `data/scenarios/` — scenario templates (7 scenarios across 2 campaigns)
+- `data/tokens/` — token definitions (chaos bag + game tokens)
+
 ## Roadmap
 
-1. Core campaign fully playable
+1. Core campaign fully playable ✅
 2. Deckbuilder
 3. Multiplayer
-4. Expansions
+4. Expansions ✅ (Dunwich Legacy cycle added)
 
 ## Documentation
 

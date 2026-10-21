@@ -43,7 +43,12 @@ export interface EnemyInstance {
   id: string;
   card: Card;
   health: number;
+  horror: number;
   engaged_with: string | null;
+  /// Location instance ID where an unengaged enemy sits. `null` when engaged.
+  location_id: string | null;
+  /// Whether the enemy is exhausted (cannot engage, attack, or hunt).
+  exhausted: boolean;
 }
 
 export interface EngageResult {
@@ -59,6 +64,7 @@ export interface FightResult {
   enemy_health: number;
   damage_dealt: number;
   damage_taken: number;
+  horror_taken: number;
   skill_test: SkillTestResult;
 }
 
@@ -85,6 +91,28 @@ export interface InvestigateResult {
 }
 
 export type GameStatus = "ongoing" | "won" | "lost";
+
+export type CampaignResultType = "won" | "lost";
+
+export interface CampaignLogEntry {
+  scenario_code: string;
+  scenario_name: string;
+  result: CampaignResultType;
+  investigator_names: string[];
+  notes: string;
+}
+
+export interface BoonOrBlemish {
+  name: string;
+  description: string;
+  is_boon: boolean;
+}
+
+export interface CampaignProgress {
+  completed_scenarios: string[];
+  campaign_log: CampaignLogEntry[];
+  boons_and_blemishes: BoonOrBlemish[];
+}
 
 export interface ActInstance {
   id: string;
@@ -205,10 +233,20 @@ export interface Investigator {
   is_defeated: boolean;
   /// Experience points earned across campaign play.
   xp: number;
+  /// Permanent physical trauma suffered across the campaign.
+  physical_trauma: number;
+  /// Permanent mental trauma suffered across the campaign.
+  mental_trauma: number;
+  /// Whether this investigator has been killed and cannot be used for the remainder of the campaign.
+  is_killed: boolean;
+  /// Whether this investigator has been driven insane and cannot be used for the remainder of the campaign.
+  is_driven_insane: boolean;
   /// Enemy instance IDs currently engaged with this investigator.
   engaged_enemies: string[];
   /// Location instance ID the investigator is currently at, if any.
   location_id: string | null;
+  /// Investigator mini token ID used to track this investigator's position on the board.
+  investigator_token_id: string | null;
   deck: Deck;
 }
 
@@ -229,8 +267,11 @@ export interface GameState {
   current_agenda_index: number;
   acts: ActInstance[];
   agendas: AgendaInstance[];
+  /// Cards in the victory display, worth experience at scenario end.
+  victory_display: Card[];
   game_status: GameStatus;
-  /// Scenario codes completed in this campaign.
-  completed_scenarios: string[];
-  log: string[];
+  /// Campaign-wide progress carried between scenarios.
+  campaign_progress: CampaignProgress;
+  /// In-game log messages for the current scenario.
+  log_messages: string[];
 }

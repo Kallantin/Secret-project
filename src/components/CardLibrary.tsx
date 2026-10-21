@@ -121,8 +121,21 @@ export default function CardLibrary() {
                 {cards.map((card) => {
                   const qty = deckQuantity.get(card.code) ?? 0;
                   const isTaboo = TABOO_LIST.includes(card.code);
+                  const imagesrc = card.raw.imagesrc as string | undefined;
+                  const imageFile = imagesrc ? imagesrc.split("/").pop() : undefined;
+                  const imageSrc = imageFile ? `/assets/cards/${imageFile}` : undefined;
                   return (
                     <li key={card.code} className={`rounded p-2 ${isTaboo ? "bg-red-900/20 border border-red-900/50" : "bg-black/20"}`}>
+                      {imageSrc && (
+                        <img
+                          src={imageSrc}
+                          alt={card.name}
+                          className="w-full h-24 object-cover rounded-t mb-1 bg-black/40"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "";
+                          }}
+                        />
+                      )}
                       <details className="group">
                         <summary className="flex items-center gap-2 text-sm font-semibold list-none cursor-pointer select-none">
                           {card.name}

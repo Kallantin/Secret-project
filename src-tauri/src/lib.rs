@@ -27,6 +27,19 @@ pub fn run() {
             commands::play_card,
             commands::save_game,
             commands::load_game,
+            commands::open_pdf,
+            commands::start_next_scenario,
+            commands::add_campaign_log_entry,
+            commands::discard_card,
+            commands::draw_card,
+            commands::add_card_to_play_area,
+            commands::gain_resource,
+            commands::spend_resources_cmd,
+            commands::heal_damage_cmd,
+            commands::heal_horror_cmd,
+            commands::take_damage_cmd,
+            commands::take_horror_cmd,
+            commands::next_investigator,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Arkham Horror LCG");

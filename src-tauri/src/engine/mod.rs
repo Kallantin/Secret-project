@@ -7,5 +7,5 @@ pub mod phase;
 pub use card::{Card, CardClass, CardId, CardType, SkillIcon, SkillIcons};
 pub use chaos::ChaosBag;
 pub use game_state::GameState;
-pub use investigator::Investigator;
+pub use investigator::{Investigator, DeckSlot};
 pub use phase::Phase;

@@ -1,0 +1,131 @@
+{
+  "campaign": "the-dunwich-legacy",
+  "code": "02004",
+  "name": "Undimensioned and Unseen",
+  "order": 4,
+  "chaos_bag": "standard",
+  "acts": [
+    {
+      "code": "02004c",
+      "name": "Undimensioned and Unseen",
+      "clue_cost": 4,
+      "text": "Investigate the strange phenomena occurring at the Whateley farm.",
+      "raw": {
+        "code": "02004c",
+        "name": "Undimensioned and Unseen",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 4,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02004d",
+      "name": "Close the Gate",
+      "clue_cost": 3,
+      "text": "Close the gate before whatever is beyond can pass through.",
+      "raw": {
+        "code": "02004d",
+        "name": "Close the Gate",
+        "type_code": "act",
+        "type_name": "Act",
+        "clue_cost": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "agendas": [
+    {
+      "code": "02005a",
+      "name": "The Gate Opens",
+      "doom_threshold": 6,
+      "text": "A gate to another dimension is opening at the farm.",
+      "raw": {
+        "code": "02005a",
+        "name": "The Gate Opens",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 6,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02005b",
+      "name": "The World Tears Apart",
+      "doom_threshold": 6,
+      "text": "If the gate fully opens, reality itself may unravel.",
+      "raw": {
+        "code": "02005b",
+        "name": "The World Tears Apart",
+        "type_code": "agenda",
+        "type_name": "Agenda",
+        "doom_threshold": 6,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ],
+  "locations": [
+    {
+      "code": "02012",
+      "name": "Whateley Farm Fields",
+      "clues": 2,
+      "shroud": 2,
+      "text": "Overgrown fields surrounding the Whateley farm.",
+      "raw": {
+        "code": "02012",
+        "name": "Whateley Farm Fields",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 2,
+        "clues": 2,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02013",
+      "name": "The Barn",
+      "clues": 3,
+      "shroud": 3,
+      "text": "A large barn that hums with strange energy.",
+      "raw": {
+        "code": "02013",
+        "name": "The Barn",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 3,
+        "clues": 3,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    },
+    {
+      "code": "02014",
+      "name": "The Gate",
+      "clues": 1,
+      "shroud": 5,
+      "text": "A shimmering portal to another dimension.",
+      "raw": {
+        "code": "02014",
+        "name": "The Gate",
+        "type_code": "location",
+        "type_name": "Location",
+        "shroud": 5,
+        "clues": 1,
+        "faction_code": "neutral",
+        "faction_name": "Neutral",
+        "is_unique": false
+      }
+    }
+  ]
+}

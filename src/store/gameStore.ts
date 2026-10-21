@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { CardTemplate } from "../data/cards";
 import type {
   AdvanceActResult,
+  CampaignProgress,
   ChaosToken,
   DeckSlot,
   EngageResult,
@@ -16,6 +17,7 @@ import type {
 } from "../types";
 import { useMultiplayerStore } from "./multiplayerStore";
 import {
+  addCampaignLogEntry as apiAddCampaignLogEntry,
   addInvestigator as apiAddInvestigator,
   advanceAct as apiAdvanceAct,
   advancePhase as apiAdvancePhase,
@@ -35,6 +37,7 @@ import {
   saveGame as apiSaveGame,
   skillTest as apiSkillTest,
   spendAction as apiSpendAction,
+  startNextScenario as apiStartNextScenario,
 } from "../lib/api";
 
 function message(error: unknown): string {
@@ -75,6 +78,7 @@ interface GameStore {
     investigators?: InvestigatorSelection[],
     encounterCards?: CardTemplate[],
     scenarioData?: ScenarioData,
+    campaignProgress?: CampaignProgress | null,
   ) => Promise<void>;
   addInvestigator: (investigator: InvestigatorSelection) => Promise<void>;
   nextPhase: () => Promise<void>;
@@ -108,8 +112,14 @@ interface GameStore {
   ) => Promise<void>;
   investigate: (investigatorId: string) => Promise<void>;
   placeDoom: (amount: number) => Promise<void>;
-  advanceAct: (investigatorId: string, cluesSpent: number) => Promise<void>;
+  advanceAct: (contributions: Array<{ investigatorId: string; cluesSpent: number }>) => Promise<void>;
   spendXp: (investigatorId: string, cardCode: string, xpCost: number) => Promise<void>;
+  startNextScenario: (
+    scenario: string,
+    seed: number | null,
+    scenarioData: ScenarioData | undefined,
+  ) => Promise<void>;
+  addCampaignLogEntry: (result: string, notes: string) => Promise<void>;
   applyGameState: (gameState: unknown) => void;
   broadcastGameState: () => void;
 }
@@ -143,7 +153,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ game });
   },
 
-  startNewGame: async (campaign, scenario, seed, investigators, encounterCards, scenarioData) => {
+  startNewGame: async (
+    campaign?: string,
+    scenario?: string,
+    seed?: number | null,
+    investigators?: InvestigatorSelection[],
+    encounterCards?: CardTemplate[],
+    scenarioData?: ScenarioData,
+    campaignProgress?: CampaignProgress | null,
+  ) => {
     set({ busy: true, error: null });
     try {
       const game = await apiNewGame(
@@ -152,6 +170,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         seed ?? null,
         encounterCards ?? [],
         scenarioData,
+        campaignProgress ?? null,
       );
       set({ game, lastToken: null });
 
@@ -166,6 +185,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
         scenario: scenario ?? "The Gathering",
         seed,
       });
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  startNextScenario: async (scenario, seed, scenarioData) => {
+    set({ busy: true, error: null });
+    try {
+      const game = await apiStartNextScenario(scenario, seed ?? null, scenarioData);
+      set({ game, lastToken: null });
+      await get().refresh();
+    } catch (error) {
+      set({ error: message(error) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  addCampaignLogEntry: async (result, notes) => {
+    set({ busy: true, error: null });
+    try {
+      const game = await apiAddCampaignLogEntry(result, notes);
+      set({ game, lastToken: null });
+      await get().refresh();
     } catch (error) {
       set({ error: message(error) });
     } finally {
@@ -497,15 +542,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
-  advanceAct: async (investigatorId: string, cluesSpent: number) => {
+  advanceAct: async (
+    contributions: Array<{ investigatorId: string; cluesSpent: number }>,
+  ) => {
     set({ busy: true, error: null });
     try {
-      const result = await apiAdvanceAct(investigatorId, cluesSpent);
+      const result = await apiAdvanceAct(contributions);
       set({ lastAdvanceActResult: result, busy: false });
       await get().refresh();
       useMultiplayerStore.getState().broadcastAction('advance_act', {
-        investigatorId,
-        cluesSpent,
+        contributions,
       });
     } catch (error) {
       set({ error: message(error) });
@@ -549,11 +595,10 @@ useMultiplayerStore.getState().setRemoteActionHandler((action) => {
       break;
     }
     case 'advance_act': {
-      const { investigatorId, cluesSpent } = action.payload as {
-        investigatorId: string;
-        cluesSpent: number;
+      const { contributions } = action.payload as {
+        contributions: Array<{ investigatorId: string; cluesSpent: number }>;
       };
-      void state.advanceAct(investigatorId, cluesSpent);
+      void state.advanceAct(contributions);
       break;
     }
     case 'move_to_location': {
@@ -594,6 +639,23 @@ useMultiplayerStore.getState().setRemoteActionHandler((action) => {
         xpCost: number;
       };
       void state.spendXp(investigatorId, cardCode, xpCost);
+      break;
+    }
+    case 'start_next_scenario': {
+      const { scenario, seed, scenario_data } = action.payload as {
+        scenario: string;
+        seed: number | null;
+        scenario_data: ScenarioData;
+      };
+      void state.startNextScenario(scenario, seed, scenario_data);
+      break;
+    }
+    case 'add_campaign_log_entry': {
+      const { result, notes } = action.payload as {
+        result: string;
+        notes: string;
+      };
+      void state.addCampaignLogEntry(result, notes);
       break;
     }
     case 'advance_phase':

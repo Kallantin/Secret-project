@@ -1,0 +1,11 @@
+{
+  "code": "02002",
+  "name": "Rex Murphy",
+  "class": "seeker",
+  "willpower": 2,
+  "intellect": 3,
+  "combat": 1,
+  "agility": 1,
+  "max_health": 6,
+  "max_sanity": 8
+}
