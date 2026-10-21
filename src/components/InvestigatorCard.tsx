@@ -44,7 +44,7 @@ export default function InvestigatorCard({
   return (
     <article className="rounded-lg border border-arkham-border bg-arkham-panel p-4 flex flex-col">
       {/* Investigator card image placeholder */}
-      <div className="aspect-[227/325] rounded-t border border-arkham-border bg-black/40 overflow-hidden relative mb-3">
+      <div className="max-w-xs aspect-[227/325] rounded-t border border-arkham-border bg-black/40 overflow-hidden relative mb-3 mx-auto">
         <img
           src={imageSrc}
           alt={investigator.name}
