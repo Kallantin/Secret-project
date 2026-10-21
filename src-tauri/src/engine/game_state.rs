@@ -57,6 +57,7 @@ pub struct ScenarioData {
 
 /// The result of a completed scenario in a campaign.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
 pub enum CampaignResult {
     Won,
     Lost,
@@ -1472,6 +1473,7 @@ fn victory_value(card: &Card) -> u32 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum GameStatus {
     Ongoing,
     Won,

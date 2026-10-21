@@ -55,9 +55,16 @@ export default function LocationPanel() {
                   key={location.id}
                   className="flex items-center justify-between gap-2 rounded border border-arkham-border/50 bg-black/20 p-2"
                 >
-                  <div className="flex-1">
+                  <div className="flex-shrink-0 w-16 h-10 rounded border border-arkham-border bg-black/40 flex items-center justify-center text-[10px] font-semibold text-gray-400">
+                    {location.card.name
+                      .split(" ")
+                      .map((w) => w[0])
+                      .join("")
+                      .toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1">
-                      <span className="text-sm font-semibold text-gray-200">
+                      <span className="text-sm font-semibold text-gray-200 truncate">
                         {location.card.name}
                       </span>
                       {isHere && (

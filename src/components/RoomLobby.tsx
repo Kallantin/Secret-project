@@ -3,35 +3,19 @@ import type { PlayerInfo } from "../lib/multiplayer";
 import { useState } from "react";
 
 export default function RoomLobby() {
-  const {
-    status,
-    roomId,
-    clientId,
-    playerName,
-    players,
-    error,
-    connect,
-    disconnect,
-    createRoom,
-    joinRoom,
-    leaveRoom,
-    setPlayerName,
-    clearError,
-  } = useMultiplayerStore((state) => ({
-    status: state.status,
-    roomId: state.roomId,
-    clientId: state.clientId,
-    playerName: state.playerName,
-    players: state.players,
-    error: state.error,
-    connect: state.connect,
-    disconnect: state.disconnect,
-    createRoom: state.createRoom,
-    joinRoom: state.joinRoom,
-    leaveRoom: state.leaveRoom,
-    setPlayerName: state.setPlayerName,
-    clearError: state.clearError,
-  }));
+  const status = useMultiplayerStore((state) => state.status);
+  const roomId = useMultiplayerStore((state) => state.roomId);
+  const clientId = useMultiplayerStore((state) => state.clientId);
+  const playerName = useMultiplayerStore((state) => state.playerName);
+  const players = useMultiplayerStore((state) => state.players);
+  const error = useMultiplayerStore((state) => state.error);
+  const connect = useMultiplayerStore((state) => state.connect);
+  const disconnect = useMultiplayerStore((state) => state.disconnect);
+  const createRoom = useMultiplayerStore((state) => state.createRoom);
+  const joinRoom = useMultiplayerStore((state) => state.joinRoom);
+  const leaveRoom = useMultiplayerStore((state) => state.leaveRoom);
+  const setPlayerName = useMultiplayerStore((state) => state.setPlayerName);
+  const clearError = useMultiplayerStore((state) => state.clearError);
 
   const isConnected = status === "connected";
   const inRoom = roomId !== null;
