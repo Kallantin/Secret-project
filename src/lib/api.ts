@@ -37,7 +37,10 @@ export async function newGame(
       campaign,
       scenario,
       seed: seed ?? null,
-      encounter_cards: encounterCards,
+      encounter_cards: encounterCards.map((card) => ({
+        ...card,
+        id: crypto.randomUUID(),
+      })),
       scenario_data: scenarioData,
       campaign_progress: campaignProgress ?? null,
     },
