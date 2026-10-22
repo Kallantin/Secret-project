@@ -56,6 +56,7 @@ export default function App() {
       ENCOUNTER_CARDS,
       scenario,
     );
+    setPickerOpen(false);
   };
 
   return (
